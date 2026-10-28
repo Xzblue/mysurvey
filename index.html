@@ -285,6 +285,7 @@ form.addEventListener("submit", async (e) => {
     try {
         const res = await fetch(PAGECLIP_ENDPOINT, {
             method: "POST",
+            headers: { "Accept": "application/json" },
             body: body
             // 不手动设置 Content-Type，浏览器会自动设为
             // application/x-www-form-urlencoded;charset=UTF-8
