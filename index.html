@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 生成视频质量调研</title>
@@ -101,6 +102,7 @@
 
 <form id="surveyForm"
       action="https://send.pageclip.co/d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW/survey"
+      class="pageclip-form"
       method="post">
 
     <!-- 可选：评审者标识 -->
@@ -233,76 +235,13 @@
     <div id="status"></div>
 </form>
 
+<script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
 <script>
-// ============================================================
-// 配置区：
-// ============================================================
-const PAGECLIP_CONFIG = {
-    siteKey: "d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW",   // 在 Pageclip 后台 Site 设置中获取
-    formName: "survey"          // 你创建的表单名称
-};
-const PAGECLIP_ENDPOINT =
-    `https://send.pageclip.co/${PAGECLIP_CONFIG.siteKey}/${PAGECLIP_CONFIG.formName}`;
-
-// ============================================================
-// 表单处理
-// ============================================================
-const form = document.getElementById("surveyForm");
-const statusEl = document.getElementById("status");
-const btn = document.getElementById("submitBtn");
-const configWarning = document.getElementById("configWarning");
-
-// 配置检查
-if (PAGECLIP_CONFIG.siteKey.startsWith("YOUR_")) {
-    configWarning.style.display = "block";
-}
-
-function setStatus(msg, ok) {
-    statusEl.textContent = msg;
-    statusEl.className = ok ? "status-ok" : "status-err";
-}
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    btn.disabled = true;
-    setStatus("正在提交…", true);
-
-    const fd = new FormData(form);
-
-    // 用 URLSearchParams 构造 application/x-www-form-urlencoded 请求体
-    // 这是 CORS 简单请求，不会触发预检，Pageclip 后端直接接收
-    const body = new URLSearchParams();
-    body.append("timestamp", new Date().toISOString());
-    body.append("reviewer",  (fd.get("reviewer")  || "").trim());
-    body.append("traj_1",    fd.get("traj_1")     || "");
-    body.append("traj_2",    fd.get("traj_2")     || "");
-    body.append("preference",fd.get("preference") || "");
-    body.append("physical_a",fd.get("physical_a") || "");
-    body.append("physical_b",fd.get("physical_b") || "");
-    body.append("comments",  (fd.get("comments")  || "").trim());
-    body.append("userAgent", navigator.userAgent);
-
-    try {
-        const res = await fetch(PAGECLIP_ENDPOINT, {
-            method: "POST",
-            headers: { "Accept": "application/json" },
-            body: body
-            // 不手动设置 Content-Type，浏览器会自动设为
-            // application/x-www-form-urlencoded;charset=UTF-8
-        });
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-        setStatus("✓ 提交成功，感谢参与！", true);
-        form.reset();
-    } catch (err) {
-        console.error(err);
-        setStatus(`提交失败：${err.message}`, false);
-    } finally {
-        btn.disabled = false;
+    // 配置检查（可选，保留你的警告逻辑）
+    const configWarning = document.getElementById("configWarning");
+    if ("d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW".startsWith("YOUR_")) {
+        configWarning.style.display = "block";
     }
-});
-
 </script>
 
 </body>
