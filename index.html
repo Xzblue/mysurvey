@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 生成视频质量调研</title>
+    <style>
+        :root {
+            --bg: #0d1117; --surface: #161b22; --border: #30363d;
+            --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+            --green: #3fb950; --red: #f85149; --radius: 10px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+            padding: 40px 20px; max-width: 860px; margin: 0 auto;
+        }
+        header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        h1 { font-size: 1.65rem; font-weight: 600; letter-spacing: -0.02em; }
+        .subtitle { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
+        .notice {
+            background: #1c2128; border: 1px solid #d29922; border-left: 4px solid #d29922;
+            border-radius: var(--radius); padding: 14px 18px; font-size: 0.88rem;
+            color: #e3b341; margin: 20px 0 28px;
+        }
+        section {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
+        }
+        section h2 {
+            font-size: 1.1rem; font-weight: 600; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-desc { color: var(--muted); font-size: 0.86rem; margin-bottom: 18px; }
+        .media-pair {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;
+        }
+        @media (max-width: 600px) { .media-pair { grid-template-columns: 1fr; } }
+        .media-box {
+            background: #0d1117; border: 1px dashed var(--border); border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 180px; color: var(--muted);
+            font-size: 0.82rem; text-align: center; padding: 16px;
+        }
+        .media-box video, .media-box img { max-width: 100%; border-radius: 6px; }
+        .field { margin-bottom: 18px; }
+        .field:last-child { margin-bottom: 0; }
+        label {
+            display: block; font-size: 0.9rem; font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .hint { color: var(--muted); font-size: 0.8rem; font-weight: 400; margin-left: 6px; }
+        select, textarea, input[type="text"] {
+            width: 100%; background: #0d1117; border: 1px solid var(--border);
+            border-radius: 6px; padding: 9px 12px; color: var(--text);
+            font-size: 0.9rem; font-family: inherit; outline: none;
+        }
+        select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 80px; }
+        .rating-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .rating-group label {
+            display: flex; align-items: center; gap: 5px; font-weight: 400;
+            background: #0d1117; border: 1px solid var(--border);
+            border-radius: 6px; padding: 7px 13px; cursor: pointer; font-size: 0.88rem;
+        }
+        .rating-group input { accent-color: var(--accent); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--accent); color: #0d1117; border: none;
+            border-radius: 8px; padding: 12px 28px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        #status { margin-top: 14px; font-size: 0.9rem; min-height: 1.4em; }
+        .status-ok { color: var(--green); }
+        .status-err { color: var(--red); }
+        .config-warning {
+            background: #1c2128; border: 1px solid var(--red);
+            border-left: 4px solid var(--red); border-radius: var(--radius);
+            padding: 12px 16px; font-size: 0.84rem; color: #ff7b72; margin-bottom: 24px;
+        }
+        .config-warning code { background: #0d1117; padding: 1px 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AI 生成视频质量调研</h1>
+    <p class="subtitle">评估生成视频与指定运动轨迹的符合程度，以及视频的整体生成质量。</p>
+</header>
+
+<div class="notice">
+    <strong>数据存储说明：</strong>本页面的提交记录将保存至 Pageclip 后台，可在其控制台中查看、导出为 CSV 或 JSON。
+</div>
+
+<div id="configWarning" class="config-warning" style="display:none;">
+    ⚠️ 请在脚本中填写 <code>PAGECLIP_CONFIG</code> 的 <code>siteKey</code> 和 <code>formName</code>。
+</div>
+
+<form id="surveyForm"
+      action="https://send.pageclip.co/YOUR_SITE_KEY/survey"
+      method="post">
+
+    <!-- 可选：评审者标识 -->
+    <section>
+        <h2>评审者标识 <span class="hint">可选，便于区分不同来源</span></h2>
+        <div class="field">
+            <label for="reviewer">姓名 / 编号</label>
+            <input type="text" id="reviewer" name="reviewer" placeholder="评审员 A / rater-03">
+        </div>
+    </section>
+
+    <!-- 第 1 组：轨迹符合度 -->
+    <section>
+        <h2>一、视频与轨迹图像的符合度</h2>
+        <p class="section-desc">
+            以下每组展示一条“指定轨迹图像”与一条“AI 生成视频”。请判断生成视频中物体的运动路径是否与轨迹图像所指示的路径一致。
+        </p>
+
+        <!-- 样本 1 -->
+        <div class="media-pair">
+            <div class="media-box">
+                <!-- 替换为你的轨迹图片 -->
+                <img src="media/traj_1.png" alt="轨迹图 1"">
+            </div>
+            <div class="media-box">
+                <!-- 替换为你的生成视频 -->
+                <video controls  preload="metadata" playsinline width="100%">
+                    <source src="media/video_1.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <div class="field">
+            <label>样本 1：视频运动轨迹与轨迹图像的一致性</label>
+            <div class="rating-group">
+                <label><input type="radio" name="traj_1" value="1" required> 1 完全不符</label>
+                <label><input type="radio" name="traj_1" value="2"> 2</label>
+                <label><input type="radio" name="traj_1" value="3"> 3 一般</label>
+                <label><input type="radio" name="traj_1" value="4"> 4</label>
+                <label><input type="radio" name="traj_1" value="5"> 5 完全符合</label>
+            </div>
+        </div>
+
+        <!-- 样本 2 -->
+        <div class="media-pair" style="margin-top:24px;">
+            <div class="media-box">
+                <img src="media/traj_1.png" alt="轨迹图 2">
+            </div>
+            <div class="media-box">
+                <video controls  preload="metadata" playsinline width="100%">
+                    <source src="media/video_1.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <div class="field">
+            <label>样本 2：视频运动轨迹与轨迹图像的一致性</label>
+            <div class="rating-group">
+                <label><input type="radio" name="traj_2" value="1" required> 1 完全不符</label>
+                <label><input type="radio" name="traj_2" value="2"> 2</label>
+                <label><input type="radio" name="traj_2" value="3"> 3 一般</label>
+                <label><input type="radio" name="traj_2" value="4"> 4</label>
+                <label><input type="radio" name="traj_2" value="5"> 5 完全符合</label>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第 2 组：生成质量对比 -->
+    <section>
+        <h2>二、不同视频的生成质量对比</h2>
+        <p class="section-desc">
+            请观看以下两段由不同方法生成的视频（对应同一参考轨迹或提示），从视觉保真度、运动连贯性、物理合理性等方面进行综合比较。
+        </p>
+
+        <div class="media-pair">
+            <div class="media-box">
+                <video controls  preload="metadata" playsinline width="100%">
+                    <source src="media/video_1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="media-box">
+                <video controls  preload="metadata" playsinline width="100%">
+                    <source src="media/video_1.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>综合来看，哪一段视频的生成质量更好？</label>
+            <div class="rating-group">
+                <label><input type="radio" name="preference" value="A" required> A 明显更好</label>
+                <label><input type="radio" name="preference" value="A_slight"> A 略好</label>
+                <label><input type="radio" name="preference" value="tie"> 两者相当</label>
+                <label><input type="radio" name="preference" value="B_slight"> B 略好</label>
+                <label><input type="radio" name="preference" value="B"> B 明显更好</label>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>视频 A 的物理合理性（物体行为是否符合直觉/物理规律）</label>
+            <div class="rating-group">
+                <label><input type="radio" name="physical_a" value="1" required> 1 严重违背</label>
+                <label><input type="radio" name="physical_a" value="2"> 2</label>
+                <label><input type="radio" name="physical_a" value="3"> 3 一般</label>
+                <label><input type="radio" name="physical_a" value="4"> 4</label>
+                <label><input type="radio" name="physical_a" value="5"> 5 合理</label>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>视频 B 的物理合理性</label>
+            <div class="rating-group">
+                <label><input type="radio" name="physical_b" value="1" required> 1 严重违背</label>
+                <label><input type="radio" name="physical_b" value="2"> 2</label>
+                <label><input type="radio" name="physical_b" value="3"> 3 一般</label>
+                <label><input type="radio" name="physical_b" value="4"> 4</label>
+                <label><input type="radio" name="physical_b" value="5"> 5 合理</label>
+            </div>
+        </div>
+    </section>
+
+    <!-- 开放评论 -->
+    <section>
+        <h2>补充意见 <span class="hint">可选</span></h2>
+        <div class="field">
+            <label for="comments">对视频质量、轨迹一致性或其他方面的具体观察</label>
+            <textarea id="comments" name="comments" placeholder="例如：样本 1 中物体在约第 2 秒时发生了明显的位置跳变……"></textarea>
+        </div>
+    </section>
+
+    <button type="submit" class="btn" id="submitBtn">提交调研结果</button>
+    <div id="status"></div>
+</form>
+
+<script>
+// ============================================================
+// 配置区：
+// ============================================================
+const PAGECLIP_CONFIG = {
+    siteKey: "d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW",   // 在 Pageclip 后台 Site 设置中获取
+    formName: "survey"          // 你创建的表单名称
+};
+const PAGECLIP_ENDPOINT =
+    `https://send.pageclip.co/${PAGECLIP_CONFIG.siteKey}/${PAGECLIP_CONFIG.formName}`;
+
+// ============================================================
+// 表单处理
+// ============================================================
+const form = document.getElementById("surveyForm");
+const statusEl = document.getElementById("status");
+const btn = document.getElementById("submitBtn");
+const configWarning = document.getElementById("configWarning");
+
+// 配置检查
+if (PAGECLIP_CONFIG.siteKey.startsWith("YOUR_")) {
+    configWarning.style.display = "block";
+}
+
+function setStatus(msg, ok) {
+    statusEl.textContent = msg;
+    statusEl.className = ok ? "status-ok" : "status-err";
+}
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    setStatus("正在提交…", true);
+
+    const fd = new FormData(form);
+
+    // 用 URLSearchParams 构造 application/x-www-form-urlencoded 请求体
+    // 这是 CORS 简单请求，不会触发预检，Pageclip 后端直接接收
+    const body = new URLSearchParams();
+    body.append("timestamp", new Date().toISOString());
+    body.append("reviewer",  (fd.get("reviewer")  || "").trim());
+    body.append("traj_1",    fd.get("traj_1")     || "");
+    body.append("traj_2",    fd.get("traj_2")     || "");
+    body.append("preference",fd.get("preference") || "");
+    body.append("physical_a",fd.get("physical_a") || "");
+    body.append("physical_b",fd.get("physical_b") || "");
+    body.append("comments",  (fd.get("comments")  || "").trim());
+    body.append("userAgent", navigator.userAgent);
+
+    try {
+        const res = await fetch(PAGECLIP_ENDPOINT, {
+            method: "POST",
+            body: body
+            // 不手动设置 Content-Type，浏览器会自动设为
+            // application/x-www-form-urlencoded;charset=UTF-8
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        setStatus("✓ 提交成功，感谢参与！", true);
+        form.reset();
+    } catch (err) {
+        console.error(err);
+        setStatus(`提交失败：${err.message}`, false);
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+</script>
+
+</body>
+</html>
