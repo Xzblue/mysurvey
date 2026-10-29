@@ -125,7 +125,7 @@
         <div class="media-pair">
             <div class="media-box">
                 <!-- 替换为你的轨迹图片 -->
-                <img src="media/traj_1.png" alt="轨迹图 1"">
+                <img src="media/traj_1.png" alt="轨迹图 1">
             </div>
             <div class="media-box">
                 <!-- 替换为你的生成视频 -->
@@ -231,8 +231,11 @@
         </div>
     </section>
 
-    <button type="submit" class="pageclip-form__submit" id="submitBtn">提交调研结果</button>
-    <div id="status"></div>
+    <button type="submit" class="btn" id="submitBtn">
+        提交调研结果
+    </button>
+    <div class="pageclip-form__success" id="successMsg">提交成功，感谢参与。</div>
+    <div class="pageclip-form__error" id="errorMsg">提交失败，请检查您的网络...</div>
 </form>
 
 <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
