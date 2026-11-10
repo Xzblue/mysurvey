@@ -99,6 +99,15 @@
         .rating-group label:hover { border-color: var(--accent); }
         .rating-group input { accent-color: var(--accent); }
 
+        /* 选中态（多选） */
+        .rating-group label:has(input:checked) {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(88, 166, 255, .08);
+        }
+        /* 每题最多选 2 个的提示行 */
+        .group-hint { margin-top: 6px; color: var(--red); font-size: 0.8rem; }
+
         /* 未作答高亮 */
         .missing {
             box-shadow: 0 0 0 2px rgba(248, 81, 73, .55);
@@ -441,9 +450,9 @@
 
     <!-- ========== 输入方式偏好（第 1 题） ========== -->
     <section class="wizard-step" id="stepPreference">
-        <h2 data-i18n="inputHeading">你更喜欢怎么告诉模型镜头怎么动？</h2>
+        <h2 data-i18n="inputHeading">你更倾向于用哪种方式指定相机运动？</h2>
         <p class="section-desc" data-i18n="inputDesc">
-            先做个选择：如果你有一张图片，想让相机按你的想法运动，下面三种方式，你最愿意用哪一种？可以点开每种方式的示例再选。
+            假设你希望基于一张静态图像生成视频，并控制视频中的相机运动。请综合考虑交互性、便利性、准确性和实际可用性，选择你最愿意使用的方式。
         </p>
 
         <div class="field">
@@ -612,9 +621,9 @@
             title: 'AI 生成视频质量调研',
             subtitle: '接下来有 21 个题目。请按页面提示一步步完成本次问卷，预计 20–30 分钟。',
 
-            inputHeading: '你更喜欢怎么告诉模型镜头怎么动？',
-            inputDesc: '先做个选择：如果你有一张图片，想让相机按你的想法运动，下面三种方式，你最愿意用哪一种？可以点开每种方式的示例再选。',
-            inputLabel: '你更愿意用哪种方式描述相机运动？',
+            inputHeading: '你更倾向于用哪种方式指定相机运动？',
+            inputDesc: '假设你希望基于一张静态图像生成视频，并控制视频中的相机运动。请综合考虑交互性、便利性、准确性和实际可用性，选择你最愿意使用的方式。',
+            inputLabel: '你更愿意用哪种方式指定相机运动？',
             inputHint: '选 1 个，必答',
 
             aTitle: '用文字描述',
@@ -636,16 +645,16 @@
             pose: '4 × 4 位姿',
             expanded: '已在上方展开',
 
-            sceneDesc: '这个场景里，你会先看到参考视频和参考轨迹，再看到 6 个候选视频拼成的画面。看完后，请分别回答下面 3 个问题，每题都从 1–6 号中选 1 个最符合的。',
+            sceneDesc: '我们的任务是：给定一张场景图片和一条画在图片上的运动路线，让 AI 生成一段视频，就像摄影师拿着相机沿着这条路线移动，拍摄沿途看到的画面。生成的视频不仅需要尽可能还原原始图片中的场景，还需要让镜头按照指定路线移动，并自然地展现从新角度看到的场景。在每组测试中，您会先看到参考视频和指定的视频镜头运动路线，随后看到由不同 AI 方法生成的 6 段视频（编号为 1–6）。请仔细观看并比较这 6 段视频，然后回答下方的 3 个问题。每道题都需要从 1–6 号视频中，选择您认为最符合题目要求的 1–2 个。不同问题可以选择同一段视频。',
             refHeading: '先看参考：GT 视频 + 参考轨迹',
             candHeading: '再看候选：6 个模型输出拼在一起',
-            answerHeading: '现在选一选：每题选 1 个候选视频',
+            answerHeading: '现在选一选：每题选 1–2 个候选视频',
             gtCaption: 'GT 视频：可以理解为这个场景的“参考答案”',
             trajCaption: '参考轨迹：相机从蓝色起点移动到红色终点',
             candNote: '画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。',
-            q1: '运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1 个。',
-            q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1 个。',
-            q3: '生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1 个。',
+            q1: '运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1–2 个。',
+            q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1–2 个。',
+            q3: '生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1–2 个。',
 
             prev: '上一题',
             next: '下一题',
@@ -653,16 +662,17 @@
             submitting: '正在提交…',
             successTitle: '✓ 提交成功，感谢参与！',
             again: '再填一份',
-            needAnswer: '请先完成本题的所有选择，再进入下一题。'
+            needAnswer: '请先完成本题的所有选择（每题选 1–2 个），再进入下一题。',
+            tooMany: '每题最多选 2 个，请先取消一个再选。'
         },
         en: {
             pageTitle: 'AI-Generated Video Quality Study',
             title: 'AI-Generated Video Quality Study',
             subtitle: 'There are 21 questions. Please complete the survey step by step, which should take about 20–30 minutes in total.',
 
-            inputHeading: 'How would you prefer to describe camera motion?',
-            inputDesc: 'First, a quick choice: if you had one image and wanted the camera to move the way you imagine, which of these three ways would you most like to use? Feel free to check the example for each method before choosing.',
-            inputLabel: 'Which way would you prefer to describe camera motion?',
+            inputHeading: 'How would you prefer to specify camera motion?',
+            inputDesc: 'Assuming you want to generate a video based on a static image and control the camera movement within it, please consider the interactivity, convenience, accuracy, and practicality of each method and choose the one you would most prefer to use.',
+            inputLabel: 'Which way would you prefer to specify camera motion?',
             inputHint: 'choose 1, required',
 
             aTitle: 'Describe it in words',
@@ -684,16 +694,16 @@
             pose: '4 × 4 pose',
             expanded: 'expanded above',
 
-            sceneDesc: 'In this scene, you will first see the reference video and trajectory, then a single frame tiled with 6 candidate videos. After watching, answer the 3 questions below; for each one, choose 1 option from 1–6.',
+            sceneDesc: 'Our task is: Given a scene image and a motion path drawn on the image, have AI generate a video as if a photographer were holding a camera and moving along this path, capturing the views seen along the way. The generated video should not only reproduce the scene in the original image as faithfully as possible, but also make the camera move along the specified path and naturally reveal the scene from new viewpoints. In each test group, you will first see a reference video and the specified camera motion path, followed by six videos generated by different AI methods (numbered 1–6). Please watch and compare these six videos carefully, and then answer the three questions below. For each question, you need to select the 1–2 videos from videos 1–6 that you think best meet the requirements of the question. Different questions may select the same video.',
             refHeading: 'Step 1 · Review the reference (GT video + trajectory)',
             candHeading: 'Step 2 · Compare the candidates (6 model outputs in one frame)',
-            answerHeading: 'Step 3 · Choose one candidate per question',
+            answerHeading: 'Step 3 · Choose 1–2 candidates per question',
             gtCaption: 'GT video — think of it as the reference answer for this scene',
             trajCaption: 'Reference trajectory — the camera moves from the blue start to the red end',
             candNote: 'The 6 tiles come from 6 different models. Play, pause, or scrub to compare them carefully.',
-            q1: 'Camera motion: after reviewing the reference trajectory and candidate videos, which option follows the reference most faithfully and looks most natural and continuous? Choose 1.',
-            q2: 'Scene reconstruction: After reviewing the candidate videos above, which option has object positions and building structures closest to the reference frame? Visible parts should match the <strong>reference image</strong>, while unseen parts only need to be generated plausibly. Please choose 1.',
-            q3: 'Generation quality: which option has the best image quality and detail, without stray trajectory lines, flicker, or blur? Choose 1.',
+            q1: 'Camera motion: after reviewing the reference trajectory and candidate videos, which option follows the reference most faithfully and looks most natural and continuous? Choose 1–2.',
+            q2: 'Scene reconstruction: After reviewing the candidate videos above, which option has object positions and building structures closest to the reference frame? Visible parts should match the <strong>reference image</strong>, while unseen parts only need to be generated plausibly. Please choose 1–2.',
+            q3: 'Generation quality: which option has the best image quality and detail, without stray trajectory lines, flicker, or blur? Choose 1–2.',
 
             prev: 'Previous',
             next: 'Next',
@@ -701,7 +711,8 @@
             submitting: 'Submitting…',
             successTitle: '✓ Submitted successfully — thank you!',
             again: 'Fill in another',
-            needAnswer: 'Please answer every question on this page before continuing.'
+            needAnswer: 'Please answer every question on this page (1–2 choices each) before continuing.',
+            tooMany: 'You can pick at most 2 options per question. Unselect one first.'
         }
     };
 
@@ -724,9 +735,10 @@
        ============================================================ */
     const container = document.getElementById('sceneContainer');
 
+    /* 场景题的 6 个候选：多选（每题限选 1–2 个） */
     const options = (name) => Array.from({ length: 6 }, (_, i) => {
         const value = i + 1;
-        return `<label><input type="radio" name="${name}" value="${value}"> <span data-opt-num="${value}">${value} 号</span></label>`;
+        return `<label><input type="checkbox" name="${name}" value="${value}"> <span data-opt-num="${value}">${value} 号</span></label>`;
     }).join('');
 
     container.innerHTML = sceneNames.map((cn, idx) => {
@@ -738,7 +750,7 @@
         <section class="wizard-step" data-scene="${n}" hidden>
             <h2 data-scene-num="${n}">场景${cn}</h2>
             <p class="section-desc" data-i18n="sceneDesc">
-                这个场景里，你会先看到参考视频和参考轨迹，再看到 6 个候选视频拼成的画面。看完后，请分别回答下面 3 个问题，每题都从 1–6 号中选 1 个最符合的。
+                这个场景里，你会先看到参考视频和参考轨迹，再看到 6 个候选视频拼成的画面。看完后，请分别回答下面 3 个问题，每题都从 1–6 号中选 1–2 个最符合的。
             </p>
 
             <h3 class="block-title" data-i18n="refHeading">先看参考：GT 视频 + 参考轨迹</h3>
@@ -759,24 +771,24 @@
             </div>
             <p class="note-line" data-i18n="candNote">画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。</p>
 
-            <h3 class="block-title" data-i18n="answerHeading">现在选一选：每题选 1 个候选视频</h3>
+            <h3 class="block-title" data-i18n="answerHeading">现在选一选：每题选 1–2 个候选视频</h3>
 
             <div class="field">
-                <label data-i18n="q1">运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1 个。</label>
+                <label data-i18n="q1">运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1–2 个。</label>
                 <div class="rating-group">
                     ${options('traj_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label data-i18n-html="q2">场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1 个。</label>
+                <label data-i18n-html="q2">场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1–2 个。</label>
                 <div class="rating-group">
                     ${options('const_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label data-i18n="q3">生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1 个。</label>
+                <label data-i18n="q3">生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1–2 个。</label>
                 <div class="rating-group">
                     ${options('qual_' + n)}
                 </div>
@@ -784,6 +796,43 @@
         </section>
         `;
     }).join('');
+
+    /* ============================================================
+       2.5 多选（每题 1–2 个）控制
+       ============================================================ */
+    const MAX_CHOICES = 2;
+
+    function setGroupHint(group, text) {
+        let hint = group.nextElementSibling;
+        if (!hint || !hint.classList.contains('group-hint')) {
+            hint = document.createElement('p');
+            hint.className = 'group-hint';
+            group.after(hint);
+        }
+        hint.textContent = text;
+        hint.hidden = false;
+    }
+
+    function clearGroupHint(group) {
+        const hint = group.nextElementSibling;
+        if (hint && hint.classList.contains('group-hint')) hint.hidden = true;
+    }
+
+    container.addEventListener('change', (e) => {
+        const input = e.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== 'checkbox') return;
+        const group = input.closest('.rating-group');
+        if (!group) return;
+
+        const checkedCount = group.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (checkedCount > MAX_CHOICES) {
+            input.checked = false;                       // 撤销这一次多余的勾选
+            setGroupHint(group, translations[currentLanguage].tooMany);
+            return;
+        }
+        clearGroupHint(group);
+        group.classList.remove('missing');
+    });
 
     /* ============================================================
        3. 向导：所有题目（第 1 题 = 输入方式偏好）
@@ -1058,17 +1107,26 @@
         }
     }
 
+    /* 校验：radio 必须恰好选 1 个；checkbox 必须选 1–2 个 */
     function validateStep(step) {
         const names = new Set();
-        step.querySelectorAll('input[type="radio"][name]').forEach((i) => names.add(i.name));
+        step.querySelectorAll('input[type="radio"][name], input[type="checkbox"][name]')
+            .forEach((i) => names.add(i.name));
 
         let ok = true;
         names.forEach((name) => {
             const group = Array.from(step.querySelectorAll(`input[name="${name}"]`));
-            const checked = group.some((i) => i.checked);
+            if (!group.length) return;
+            const checked = group.filter((i) => i.checked);
+            const isMulti = group[0].type === 'checkbox';
+
+            const valid = isMulti
+                ? (checked.length >= 1 && checked.length <= MAX_CHOICES)
+                : (checked.length === 1);
+
             const wrap = group[0].closest('.rating-group') || group[0].closest('.method-grid');
-            if (wrap) wrap.classList.toggle('missing', !checked);
-            if (!checked) ok = false;
+            if (wrap) wrap.classList.toggle('missing', !valid);
+            if (!valid) ok = false;
         });
         return ok;
     }
@@ -1088,6 +1146,48 @@
     nextBtn.addEventListener('click', goNext);
     prevBtn.addEventListener('click', () => showStep(currentStep - 1));
 
+    /* ============================================================
+       5.5 提交前把多选值合并成单字段（保证 Pageclip 存得下）
+       ============================================================ */
+    let normalizedState = null;
+
+    function normalizeMultiSelect() {
+        if (normalizedState) return;
+        normalizedState = { hidden: [], checkboxes: [] };
+
+        const groups = new Map();
+        form.querySelectorAll('input[type="checkbox"][name]').forEach((input) => {
+            if (!groups.has(input.name)) groups.set(input.name, []);
+            if (input.checked) groups.get(input.name).push(input.value);
+        });
+
+        groups.forEach((values, name) => {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = name;
+            hidden.value = values.join(',');      // 例如 "2,5"
+            form.appendChild(hidden);
+            normalizedState.hidden.push(hidden);
+
+            form.querySelectorAll(`input[type="checkbox"][name="${name}"]`).forEach((el) => {
+                normalizedState.checkboxes.push({ el, name });
+                el.disabled = true;               // disabled 不参与提交
+                el.removeAttribute('name');
+            });
+        });
+    }
+
+    /** 提交失败时还原，允许用户修改后再次提交 */
+    function restoreMultiSelect() {
+        if (!normalizedState) return;
+        normalizedState.hidden.forEach((h) => h.remove());
+        normalizedState.checkboxes.forEach(({ el, name }) => {
+            el.disabled = false;
+            el.setAttribute('name', name);
+        });
+        normalizedState = null;
+    }
+
     // 兜底：提交前再整体校验一次（捕获阶段，先于 Pageclip 处理）
     form.addEventListener('submit', function (e) {
         for (let i = 0; i < steps.length; i++) {
@@ -1100,6 +1200,7 @@
                 return;
             }
         }
+        normalizeMultiSelect();   // 全部通过后再整理，避免中途禁用选项
     }, true);
 
     /* ============================================================
@@ -1117,6 +1218,12 @@
             if (dict[key] !== undefined) el.textContent = dict[key];
         });
 
+        // 含 HTML 标签的文案（如 q2 里的 <strong>）
+        document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+            const key = el.dataset.i18nHtml;
+            if (dict[key] !== undefined) el.innerHTML = dict[key];
+        });
+
         document.querySelectorAll('[data-scene-num]').forEach((el) => {
             const n = Number(el.dataset.sceneNum);
             el.textContent = lang === 'zh' ? `场景${sceneNames[n - 1]}` : `Scene ${n}`;
@@ -1131,6 +1238,9 @@
             const f = el.dataset.frame;
             el.textContent = lang === 'zh' ? `第 ${f} 帧` : `Frame ${f}`;
         });
+
+        // 切换语言时清掉残留的“最多选 2 个”提示
+        document.querySelectorAll('.group-hint').forEach((h) => { h.hidden = true; });
 
         prevBtn.textContent = dict.prev;
         nextBtn.textContent = dict.next;
@@ -1176,6 +1286,7 @@
             statusEl.dataset.state = '';
             statusEl.textContent = '';
             submitBtn.disabled = false;
+            restoreMultiSelect();          // 提交失败：还原可编辑状态
         }
     });
 
