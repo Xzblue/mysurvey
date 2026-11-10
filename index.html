@@ -12,14 +12,42 @@
             --green: #3fb950; --red: #f85149; --radius: 10px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        [hidden] { display: none !important; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background: var(--bg); color: var(--text); line-height: 1.7;
-            padding: 40px 20px; max-width: 860px; margin: 0 auto;
+            padding: 40px 20px; max-width: 1040px; margin: 0 auto;
         }
-        header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        header { position: relative; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
         h1 { font-size: 1.65rem; font-weight: 600; letter-spacing: -0.02em; }
         .subtitle { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
+
+        /* ===== 语言切换 ===== */
+        .lang-toggle {
+            position: absolute; top: 0; right: 0;
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 6px 10px;
+            border: 1px solid var(--border); border-radius: 999px;
+            background: var(--surface); color: var(--muted);
+            font: inherit; font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: border-color .15s;
+        }
+        .lang-toggle:hover { border-color: var(--accent); }
+        .lang-opt { opacity: .5; transition: opacity .15s, color .15s; }
+        .lang-opt.active { color: var(--accent); opacity: 1; }
+        .toggle-track {
+            position: relative; width: 30px; height: 17px;
+            border: 1px solid var(--border); border-radius: 999px; background: #21262d;
+        }
+        .toggle-knob {
+            position: absolute; top: 2px; left: 2px; width: 11px; height: 11px;
+            border-radius: 50%; background: var(--muted);
+            transition: transform .2s ease, background .2s ease;
+        }
+        html[lang="zh-CN"] .toggle-knob { transform: translateX(13px); background: var(--accent); }
+        @media (max-width: 560px) {
+            .lang-toggle { position: static; margin-bottom: 16px; }
+        }
 
         section {
             background: var(--surface); border: 1px solid var(--border);
@@ -76,6 +104,7 @@
         }
         .ref-grid video, .ref-grid img {
             display: block; width: 100%; border-radius: 6px; background: #000;
+            aspect-ratio: 16 / 9; object-fit: contain;
         }
         .ref-grid figcaption {
             margin-top: 8px; font-size: 0.8rem; color: var(--muted); text-align: center;
@@ -97,9 +126,16 @@
             display: flex; align-items: center; gap: 5px; font-weight: 400;
             background: #0d1117; border: 1px solid var(--border);
             border-radius: 6px; padding: 7px 13px; cursor: pointer; font-size: 0.88rem;
+            margin-bottom: 0;
         }
         .rating-group label:hover { border-color: var(--accent); }
         .rating-group input { accent-color: var(--accent); }
+
+        /* 未作答高亮 */
+        .missing {
+            box-shadow: 0 0 0 2px rgba(248, 81, 73, .55);
+            border-radius: 10px;
+        }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -121,77 +157,305 @@
             font-size: 1.15rem; font-weight: 600; color: var(--green); margin-bottom: 24px;
         }
         .success-card .btn { width: auto; padding: 10px 28px; margin: 0 auto; }
+
+        /* ==========================================================
+           向导模式：进度条 + 底部导航
+           ========================================================== */
+        .wizard-progress { margin: 0 0 20px; scroll-margin-top: 24px; }
+        .progress-track {
+            height: 6px; border-radius: 999px; background: #21262d; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; width: 0; border-radius: 999px;
+            background: linear-gradient(90deg, #2f81f7, var(--accent));
+            transition: width .28s ease;
+        }
+        .progress-text {
+            margin-top: 8px; text-align: center;
+            font-size: 0.8rem; color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wizard-nav {
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+            margin-top: 26px; padding-top: 18px;
+            border-top: 1px solid var(--border);
+        }
+        .wizard-nav .btn {
+            flex: 1 1 140px; width: auto; margin: 0;
+        }
+        .wizard-nav .btn.ghost {
+            background: transparent; color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .wizard-nav .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+        .wizard-nav .wizard-error {
+            flex: 1 1 100%; margin: 4px 0 0;
+            color: var(--red); font-size: 0.84rem; min-height: 1.2em;
+        }
+
+        /* 离屏预加载容器（1x1，不可见，保证浏览器愿意预取） */
+        .preload-host {
+            position: fixed; top: 0; left: -9999px;
+            width: 1px; height: 1px; overflow: hidden; opacity: 0;
+            pointer-events: none; z-index: -1;
+        }
+
+        /* ==========================================================
+           输入方式偏好：对照卡片结构（深色化）
+           ========================================================== */
         .method-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-top: 10px;
-        }
-        @media (max-width: 720px) {
-            .method-grid { grid-template-columns: 1fr; }
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 14px;
         }
 
         .method-card {
             position: relative;
-            display: block;
+            display: grid;
+            grid-template-columns: 22px 32px minmax(0, 1fr);
+            gap: 12px;
+            align-items: start;
             margin: 0;
-            padding: 12px;
+            padding: 20px;
             background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 400;
-            transition: border-color .15s, box-shadow .15s;
+            transition: border-color .18s ease, box-shadow .18s ease;
         }
-        .method-card:hover {
-            border-color: var(--accent);
-        }
-        .method-card:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent);
-        }
+        .method-card:hover { border-color: #4b6b95; }
         .method-card:has(input:checked) {
             border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, .18);
         }
         .method-card input[type="radio"] {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            accent-color: var(--accent);
-            z-index: 2;
+            position: absolute; opacity: 0; pointer-events: none;
         }
-        .method-card img {
-            display: block;
-            width: 100%;
-            aspect-ratio: 16 / 10;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: #000;
+        .radio-dot {
+            width: 20px; height: 20px; margin-top: 3px;
+            border: 2px solid #4a5568; border-radius: 50%;
+            background: transparent;
+            transition: border .15s ease;
         }
-        .method-card .method-name {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .method-card input:checked ~ .method-name {
+        .method-card:has(input:checked) .radio-dot { border: 6px solid var(--accent); }
+        .method-letter {
+            display: grid; place-items: center;
+            width: 30px; height: 26px;
+            border-radius: 7px;
+            background: rgba(88, 166, 255, .15);
             color: var(--accent);
+            font-size: .78rem; font-weight: 800;
         }
-        .method-card .method-desc {
-            margin-top: 4px;
-            font-size: 0.8rem;
+        .method-head { display: block; min-width: 0; }
+        .method-name {
+            display: block;
+            font-size: .98rem; font-weight: 600; color: var(--text);
+        }
+        .method-card:has(input:checked) .method-name { color: var(--accent); }
+        .method-desc {
+            display: block;
+            margin-top: 3px;
+            font-size: .82rem; color: var(--muted); line-height: 1.5;
+        }
+
+        /* 输入 → 输出 对照网格 */
+        .comparison-grid {
+            grid-column: 3;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 30px minmax(0, .72fr);
+            gap: 12px;
+            align-items: center;
+            min-width: 0;
+            margin-top: 14px;
+        }
+        .input-panel, .output-panel {
+            position: relative;
+            display: block;
+            min-width: 0;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface);
+        }
+        .panel-label {
+            position: absolute; z-index: 3; top: 9px; left: 9px;
+            padding: 5px 8px; border-radius: 6px;
+            background: rgba(1, 4, 9, .85);
+            color: #e6edf3;
+            font-size: 10px; font-weight: 700; letter-spacing: .04em;
+        }
+        .input-panel > img,
+        .trajectory-canvas > img,
+        .output-panel video {
+            display: block; width: 100%; aspect-ratio: 16 / 9;
+            object-fit: cover; background: #000;
+        }
+        .flow-arrow { color: #4a5568; font-size: 22px; text-align: center; }
+
+        /* 选项 A：文本提示词 */
+        .prompt-box {
+            display: grid; grid-template-columns: 26px minmax(0, 1fr);
+            gap: 8px;
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .prompt-icon {
+            display: grid; place-items: center;
+            width: 26px; height: 26px; border-radius: 6px;
+            background: rgba(88, 166, 255, .15); color: var(--accent);
+            font-size: 10px; font-weight: 800;
+        }
+        .prompt-text { color: #a9b6c8; font-size: .68rem; line-height: 1.5; }
+
+        /* 选项 B：手绘轨迹 */
+        .trajectory-canvas { position: relative; display: block; }
+        .trajectory-overlay {
+            position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+        }
+        .trajectory-shadow {
+            fill: none; stroke: rgba(0, 0, 0, .35); stroke-width: 9;
+            stroke-linecap: round; stroke-linejoin: round;
+        }
+        .trajectory-line {
+            fill: none; stroke: #ffcc33; stroke-width: 5;
+            stroke-linecap: round; stroke-linejoin: round;
+        }
+        .trajectory-end-halo { fill: rgba(255, 255, 255, .9); }
+        .trajectory-point.start { fill: #22c55e; stroke: #fff; stroke-width: 2; }
+        .trajectory-point.end { fill: #ef4444; stroke: #fff; stroke-width: 2; }
+        .trajectory-tag {
+            position: absolute; z-index: 2;
+            padding: 4px 7px; border-radius: 6px;
+            color: #fff; font-size: 9px; font-weight: 900; letter-spacing: .05em;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .3);
+        }
+        .start-tag { right: 10%; bottom: 15%; background: #16a34a; }
+        .end-tag { left: 31%; top: 36%; background: #dc2626; }
+        .draw-toolbar {
+            position: absolute; z-index: 3; right: 8px; top: 8px;
+            display: flex; gap: 3px; padding: 4px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: rgba(13, 17, 23, .88);
+            backdrop-filter: blur(6px);
+        }
+        .tool {
+            display: grid; place-items: center;
+            width: 24px; height: 22px; border-radius: 5px;
+            color: var(--muted); font-size: 13px;
+        }
+        .tool.active { background: rgba(88, 166, 255, .18); color: var(--accent); }
+
+        /* 选项 C：相机参数 */
+        .parameter-panel {
+            min-height: 300px;
+            padding: 40px 12px 12px;
+            background: linear-gradient(145deg, #161b22, #0d1117);
+        }
+        .upload-row {
+            display: grid; grid-template-columns: 30px minmax(0, 1fr) 20px;
+            align-items: center; gap: 8px;
+            padding: 8px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: #0d1117;
+        }
+        .upload-icon {
+            display: grid; place-items: center;
+            width: 28px; height: 28px; border-radius: 7px;
+            background: rgba(88, 166, 255, .15); color: var(--accent);
+            font-size: 15px; font-weight: 800;
+        }
+        .upload-row strong { display: block; font-size: .7rem; font-weight: 600; color: var(--text); }
+        .upload-row small { display: block; margin-top: 2px; color: var(--muted); font-size: .62rem; }
+        .file-check {
+            display: grid; place-items: center;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: rgba(63, 185, 80, .18); color: var(--green);
+            font-size: .7rem; font-weight: 900;
+        }
+        .matrix-preview-row {
+            display: grid;
+            grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .matrix-card {
+            min-width: 0;
+            padding: 8px 9px 9px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: #0d1117;
+        }
+        .matrix-card > b {
+            display: block; margin-bottom: 6px;
+            color: var(--muted); font-size: .56rem; font-weight: 600; text-align: center;
+        }
+        .matrix-brackets {
+            position: relative;
+            display: grid; gap: 3px 6px;
+            padding: 3px 8px;
+        }
+        .matrix-brackets::before,
+        .matrix-brackets::after {
+            position: absolute; top: 0; bottom: 0; width: 5px;
+            border-top: 1px solid #3d4757; border-bottom: 1px solid #3d4757;
+            content: "";
+        }
+        .matrix-brackets::before { left: 0; border-left: 1px solid #3d4757; }
+        .matrix-brackets::after { right: 0; border-right: 1px solid #3d4757; }
+        .matrix-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .matrix-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .matrix-brackets code {
+            min-width: 0;
+            color: #9fb0c7;
+            font-size: .5rem; line-height: 1.4;
+            text-align: right; font-variant-numeric: tabular-nums;
+        }
+        .pose-strip { display: flex; align-items: center; gap: 4px; overflow: hidden; }
+        .pose-card {
+            flex: 1 1 70px; min-width: 60px;
+            padding: 6px;
+            border: 1px solid var(--border); border-radius: 7px;
+            background: #0d1117; text-align: center;
+        }
+        .pose-card b, .pose-card code, .pose-card small { display: block; }
+        .pose-card b { color: var(--muted); font-size: .56rem; font-weight: 600; }
+        .pose-card code { margin: 5px 0 3px; color: var(--accent); font-size: .66rem; font-weight: 800; }
+        .pose-card small { color: #6b7688; font-size: .52rem; }
+        .pose-card.expanded { border-color: rgba(88, 166, 255, .5); background: rgba(88, 166, 255, .1); }
+        .pose-link { color: #4a5568; font-weight: 800; font-size: .7rem; }
+        .sequence-caption {
+            display: block; margin-top: 8px;
             color: var(--muted);
-            line-height: 1.55;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .62rem; text-align: center; letter-spacing: .06em;
+        }
+
+        @media (max-width: 820px) {
+            .method-card { padding: 16px; grid-template-columns: 22px 30px minmax(0, 1fr); }
+            .comparison-grid { grid-column: 1 / -1; grid-template-columns: 1fr; }
+            .flow-arrow { transform: rotate(90deg); }
+            .parameter-panel { min-height: 0; }
+        }
+        @media (max-width: 520px) {
+            .method-card { padding: 12px; border-radius: 10px; }
+            .method-name { font-size: .92rem; }
+            .matrix-preview-row { grid-template-columns: 1fr; }
+            .matrix-brackets code { font-size: .55rem; }
+            .pose-card:nth-of-type(n+4), .pose-link:nth-of-type(n+4) { display: none; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>AI 生成视频质量调研</h1>
-    <p class="subtitle">
+    <button class="lang-toggle" id="langToggle" type="button" aria-pressed="false" aria-label="Switch to English">
+        <span class="lang-opt active">EN</span><span class="toggle-track"><span class="toggle-knob"></span></span><span class="lang-opt">中文</span>
+    </button>
+    <h1 data-i18n="title">AI 生成视频质量调研</h1>
+    <p class="subtitle" data-i18n="subtitle">
         模型输入「场景图片 + 用户指定轨迹」，输出「沿轨迹运动的第一视角视频」。
         请对比参考素材与候选视频，选出每个维度下表现最好的一个。
     </p>
@@ -199,30 +463,30 @@
 
 <!-- ========== 任务说明（全站只出现一次） ========== -->
 <section>
-    <h2>任务说明</h2>
+    <h2 data-i18n="taskHeading">任务说明</h2>
 
     <ul class="task-list">
-        <li><strong>模型输入：</strong>一张场景图片，以及一条用户在参考视图中指定的运动轨迹。</li>
-        <li><strong>模型输出：</strong>一段第一视角视频——相机从轨迹起点出发，沿轨迹运动到终点。</li>
-        <li><strong>你的任务：</strong>每个场景先看「参考素材」（GT 标准视频 + 参考轨迹），再看「候选视频」（2–7 号拼接画面），最后在 3 个维度上各选出 1 个最好的候选视频。</li>
+        <li data-i18n-html="task1"><strong>模型输入：</strong>一张场景图片，以及一条用户在参考视图中指定的运动轨迹。</li>
+        <li data-i18n-html="task2"><strong>模型输出：</strong>一段第一视角视频——相机从轨迹起点出发，沿轨迹运动到终点。</li>
+        <li data-i18n-html="task3"><strong>你的任务：</strong>每个场景先看「参考素材」（GT 标准视频 + 参考轨迹），再看「候选视频」（2–7 号拼接画面），最后在 3 个维度上各选出 1 个最好的候选视频。</li>
     </ul>
 
     <div class="dim-grid">
         <div class="dim-card">
-            <div class="dim-title">① 运动轨迹</div>
-            <div class="dim-desc">相机运动是否贴合参考轨迹，速度快慢是否合理，画面是否连贯、不抖动、不跳变。</div>
+            <div class="dim-title" data-i18n="dim1Title">① 运动轨迹</div>
+            <div class="dim-desc" data-i18n="dim1Desc">相机运动是否贴合参考轨迹，速度快慢是否合理，画面是否连贯、不抖动、不跳变。</div>
         </div>
         <div class="dim-card">
-            <div class="dim-title">② 场景重现</div>
-            <div class="dim-desc">物体位置是否正确、建筑结构是否合理，场景内容是否与输入图片一致、没有明显变形或凭空出现。</div>
+            <div class="dim-title" data-i18n="dim2Title">② 场景重现</div>
+            <div class="dim-desc" data-i18n="dim2Desc">物体位置是否正确、建筑结构是否合理，场景内容是否与输入图片一致、没有明显变形或凭空出现。</div>
         </div>
         <div class="dim-card">
-            <div class="dim-title">③ 生成质量</div>
-            <div class="dim-desc">画质清晰度、细节表现，是否出现轨迹线等非场景元素、闪烁、模糊或伪影。</div>
+            <div class="dim-title" data-i18n="dim3Title">③ 生成质量</div>
+            <div class="dim-desc" data-i18n="dim3Desc">画质清晰度、细节表现，是否出现轨迹线等非场景元素、闪烁、模糊或伪影。</div>
         </div>
     </div>
 
-    <p class="tip-line">
+    <p class="tip-line" data-i18n="tip">
         共 20 个场景，预计用时 20–30 分钟。所有题目均为单选且必答。
     </p>
 </section>
@@ -232,162 +496,794 @@
       action="https://send.pageclip.co/d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW/survey"
       class="pageclip-form"
       method="post">
-    <section>
-        <h2>输入方式偏好</h2>
-        <p class="section-desc">
+
+    <!-- ========== 进度条 ========== -->
+    <div class="wizard-progress" id="wizardProgress">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">第 1 / 21 题</div>
+    </div>
+
+    <!-- ========== 输入方式偏好（第 1 题） ========== -->
+    <section class="wizard-step" id="stepPreference">
+        <h2 data-i18n="inputHeading">输入方式偏好</h2>
+        <p class="section-desc" data-i18n="inputDesc">
             请选择你认为最适合用于指定相机运动轨迹的输入方式。以下截图为示意。
         </p>
 
         <div class="field">
-            <label>Q · 你更偏好哪种轨迹输入方式？<span class="hint">单选，必答</span></label>
+            <label>
+                <span data-i18n="inputLabel">Q · 你更偏好哪种轨迹输入方式？</span><span class="hint" data-i18n="inputHint">单选，必答</span>
+            </label>
 
             <div class="method-grid">
-                <label class="method-card">
-                    <input type="radio" name="input_method" value="draw" required>
-                    <img src="media/input_method_draw.png" alt="在参考视图中绘制轨迹示意图" loading="lazy">
-                    <div class="method-name">在参考视图中绘制轨迹</div>
-                    <div class="method-desc">
-                        直接在俯视参考图上手绘或点选路径，直观指定起点、终点和转弯。
-                    </div>
-                </label>
 
+                <!-- A · 文本描述 -->
                 <label class="method-card">
                     <input type="radio" name="input_method" value="text">
-                    <img src="media/input_method_text.png" alt="用文本方式描述轨迹示意图" loading="lazy">
-                    <div class="method-name">用文本方式描述轨迹</div>
-                    <div class="method-desc">
-                        用自然语言描述运动，如“向前直行后左转”，输入门槛低但精度有限。
-                    </div>
+                    <span class="radio-dot" aria-hidden="true"></span>
+                    <span class="method-letter">A</span>
+                    <span class="method-head">
+                        <span class="method-name" data-i18n="aTitle">文本描述</span>
+                        <span class="method-desc" data-i18n="aDesc">使用自然语言详细描述期望的相机运动。</span>
+                    </span>
+
+                    <span class="comparison-grid">
+                        <span class="input-panel">
+                            <span class="panel-label" data-i18n="userInput">用户输入</span>
+                            <img data-src="media/reference_frame.png" alt="用户输入的参考图像">
+                            <span class="prompt-box">
+                                <span class="prompt-icon" aria-hidden="true">Aa</span>
+                                <span class="prompt-text" data-i18n="prompt">初始时，相机位于红色卡车后方略高的位置，沿道路方向向前观察，并使卡车尾部保持在画面中央附近。相机以恒定的跟随距离和高度平滑地随卡车向前移动。当卡车进入路口时，相机沿道路的缓慢左弯连续向左偏航，保持水平且不发生滚转。完成左转后，相机轨迹稍微向车道中央偏移，以安全绕过路边的路牌及其附近的电线杆，并保持足够间距，避免路牌或电线杆遮挡卡车。越过路牌后，相机应平滑地重新将卡车置于画面中央，并继续沿弯曲道路跟随。整个过程中保持焦距、相机高度、俯仰角和跟随距离稳定；不要变焦，不要突然加速或旋转，不要与场景物体发生碰撞，也不要产生明显抖动。</span>
+                            </span>
+                        </span>
+                        <span class="flow-arrow" aria-hidden="true">→</span>
+                        <span class="output-panel">
+                            <span class="panel-label" data-i18n="videoOutput">生成视频 · 真实输出</span>
+                            <video muted loop controls playsinline preload="none" data-src="media/generated_video.mp4"></video>
+                        </span>
+                    </span>
                 </label>
 
+                <!-- B · 手绘 2D 轨迹 -->
+                <label class="method-card">
+                    <input type="radio" name="input_method" value="draw">
+                    <span class="radio-dot" aria-hidden="true"></span>
+                    <span class="method-letter">B</span>
+                    <span class="method-head">
+                        <span class="method-name" data-i18n="bTitle">在 2D 图像上绘制相机轨迹</span>
+                        <span class="method-desc" data-i18n="bDesc">直接在输入图像上画出期望的相机运动路径。</span>
+                    </span>
+
+                    <span class="comparison-grid">
+                        <span class="input-panel">
+                            <span class="panel-label" data-i18n="userInput">用户输入</span>
+                            <span class="trajectory-canvas">
+                                <img data-src="media/reference_frame.png" alt="在图像上绘制的相机运动轨迹">
+                                <svg class="trajectory-overlay" viewBox="0 0 896 512" preserveAspectRatio="none" aria-hidden="true">
+                                    <path class="trajectory-shadow" d="M 820 454 C 755 372, 674 285, 574 245 S 360 230, 260 165" />
+                                    <path class="trajectory-line" d="M 820 454 C 755 372, 674 285, 574 245 S 360 230, 260 165" />
+                                    <circle class="trajectory-end-halo start" cx="820" cy="454" r="13" />
+                                    <circle class="trajectory-point start" cx="820" cy="454" r="8" />
+                                    <circle class="trajectory-end-halo end" cx="260" cy="165" r="13" />
+                                    <circle class="trajectory-point end" cx="260" cy="165" r="8" />
+                                </svg>
+                                <span class="trajectory-tag start-tag" data-i18n="start">起点</span>
+                                <span class="trajectory-tag end-tag" data-i18n="end">终点</span>
+                            </span>
+                            <span class="draw-toolbar" aria-hidden="true">
+                                <span class="tool active">✎</span><span class="tool">↶</span><span class="tool">↷</span><span class="tool">⌫</span>
+                            </span>
+                        </span>
+                        <span class="flow-arrow" aria-hidden="true">→</span>
+                        <span class="output-panel">
+                            <span class="panel-label" data-i18n="videoOutput">生成视频 · 真实输出</span>
+                            <video muted loop controls playsinline preload="none" data-src="media/generated_video.mp4"></video>
+                        </span>
+                    </span>
+                </label>
+
+                <!-- C · 相机参数 -->
                 <label class="method-card">
                     <input type="radio" name="input_method" value="json">
-                    <img src="media/input_method_json.png" alt="用 JSON 文件编写相机内外参示意图" loading="lazy">
-                    <div class="method-name">用 JSON 文件编写相机内外参</div>
-                    <div class="method-desc">
-                        提供逐帧相机位姿或内外参，精确可控，但需要专业工具和格式知识。
-                    </div>
+                    <span class="radio-dot" aria-hidden="true"></span>
+                    <span class="method-letter">C</span>
+                    <span class="method-head">
+                        <span class="method-name" data-i18n="cTitle">提供相机参数</span>
+                        <span class="method-desc" data-i18n="cDesc">由用户提供相机内参和连续的相机外参位姿序列。</span>
+                    </span>
+
+                    <span class="comparison-grid">
+                        <span class="input-panel parameter-panel">
+                            <span class="panel-label" data-i18n="providedInput">用户提供的输入 · 249 个相机位姿</span>
+
+                            <span class="upload-row">
+                                <span class="upload-icon" aria-hidden="true">↑</span>
+                                <span>
+                                    <strong>candidate_01_camera_path_c2w.npy</strong>
+                                    <small data-i18n="uploaded">由用户上传 · 共 249 个相机位姿</small>
+                                </span>
+                                <span class="file-check" aria-hidden="true">✓</span>
+                            </span>
+
+                            <span class="matrix-preview-row">
+                                <span class="matrix-card">
+                                    <b data-i18n="intrinsics">共享相机内参 K</b>
+                                    <span class="matrix-brackets matrix-3" aria-label="3 by 3 camera intrinsic matrix">
+                                        <code>1345.7</code><code>0.0</code><code>448.0</code>
+                                        <code>0.0</code><code>1344.2</code><code>256.0</code>
+                                        <code>0.0</code><code>0.0</code><code>1.0</code>
+                                    </span>
+                                </span>
+                                <span class="matrix-card">
+                                    <b data-i18n="extrinsicExample">展开的位姿示例 · 第 060 帧 · T_c2w</b>
+                                    <span class="matrix-brackets matrix-4" aria-label="4 by 4 camera-to-world pose matrix at frame 60">
+                                        <code>−0.4110</code><code>0.5995</code><code>−0.6868</code><code>7.6949</code>
+                                        <code>−0.4942</code><code>0.4865</code><code>0.7205</code><code>−7.2699</code>
+                                        <code>0.7660</code><code>0.6355</code><code>0.0963</code><code>−2.0484</code>
+                                        <code>0.0000</code><code>0.0000</code><code>0.0000</code><code>1.0000</code>
+                                    </span>
+                                </span>
+                            </span>
+
+                            <span class="pose-strip" aria-label="用户提供的连续相机外参矩阵序列">
+                                <span class="pose-card"><b data-frame="000">第 000 帧</b><code>[R₀ | t₀]</code><small data-i18n="pose">4 × 4 位姿</small></span>
+                                <span class="pose-link">···</span>
+                                <span class="pose-card expanded"><b data-frame="060">第 060 帧</b><code>[R₆₀ | t₆₀]</code><small data-i18n="expanded">已在上方展开</small></span>
+                                <span class="pose-link">···</span>
+                                <span class="pose-card"><b data-frame="124">第 124 帧</b><code>[R₁₂₄ | t₁₂₄]</code><small data-i18n="pose">4 × 4 位姿</small></span>
+                                <span class="pose-link">···</span>
+                                <span class="pose-card"><b data-frame="186">第 186 帧</b><code>[R₁₈₆ | t₁₈₆]</code><small data-i18n="pose">4 × 4 位姿</small></span>
+                                <span class="pose-link">···</span>
+                                <span class="pose-card"><b data-frame="248">第 248 帧</b><code>[R₂₄₈ | t₂₄₈]</code><small data-i18n="pose">4 × 4 位姿</small></span>
+                            </span>
+                            <span class="sequence-caption">T₀ → T₁ → T₂ → ··· → T₂₄₈</span>
+                        </span>
+                        <span class="flow-arrow" aria-hidden="true">→</span>
+                        <span class="output-panel">
+                            <span class="panel-label" data-i18n="videoOutput">生成视频 · 真实输出</span>
+                            <video muted loop controls playsinline preload="none" data-src="media/generated_video.mp4"></video>
+                        </span>
+                    </span>
                 </label>
+
             </div>
         </div>
     </section>
+
+    <!-- 场景由 JS 逐题生成 -->
     <div id="sceneContainer"></div>
-  
-    <button type="submit" class="btn" id="submitBtn">提交调研结果</button>
 </form>
 
 <!-- 成功提示，默认隐藏，放在表单外面不受 Pageclip 控制 -->
 <div id="successBox" style="display:none;">
     <div class="success-card">
-        <p class="success-title">✓ 提交成功，感谢参与！</p>
-        <button type="button" class="btn" onclick="location.reload()">再填一份</button>
+        <p class="success-title" data-i18n="successTitle">✓ 提交成功，感谢参与！</p>
+        <button type="button" class="btn" data-i18n="again" onclick="location.reload()">再填一份</button>
     </div>
 </div>
 
 <div id="status"></div>
+
+<script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
 <script>
 (function () {
+    /* ============================================================
+       1. 多语言文案
+       ============================================================ */
+    const translations = {
+        zh: {
+            pageTitle: 'AI 生成视频质量调研',
+            title: 'AI 生成视频质量调研',
+            subtitle: '模型输入「场景图片 + 用户指定轨迹」，输出「沿轨迹运动的第一视角视频」。请对比参考素材与候选视频，选出每个维度下表现最好的一个。',
+
+            taskHeading: '任务说明',
+            task1: '<strong>模型输入：</strong>一张场景图片，以及一条用户在参考视图中指定的运动轨迹。',
+            task2: '<strong>模型输出：</strong>一段第一视角视频——相机从轨迹起点出发，沿轨迹运动到终点。',
+            task3: '<strong>你的任务：</strong>每个场景先看「参考素材」（GT 标准视频 + 参考轨迹），再看「候选视频」（2–7 号拼接画面），最后在 3 个维度上各选出 1 个最好的候选视频。',
+            dim1Title: '① 运动轨迹',
+            dim1Desc: '相机运动是否贴合参考轨迹，速度快慢是否合理，画面是否连贯、不抖动、不跳变。',
+            dim2Title: '② 场景重现',
+            dim2Desc: '物体位置是否正确、建筑结构是否合理，场景内容是否与输入图片一致、没有明显变形或凭空出现。',
+            dim3Title: '③ 生成质量',
+            dim3Desc: '画质清晰度、细节表现，是否出现轨迹线等非场景元素、闪烁、模糊或伪影。',
+            tip: '共 20 个场景，预计用时 20–30 分钟。所有题目均为单选且必答。',
+
+            inputHeading: '输入方式偏好',
+            inputDesc: '请选择你认为最适合用于指定相机运动轨迹的输入方式。以下截图为示意。',
+            inputLabel: 'Q · 你更偏好哪种轨迹输入方式？',
+            inputHint: '单选，必答',
+
+            aTitle: '文本描述',
+            aDesc: '使用自然语言详细描述期望的相机运动。',
+            bTitle: '在 2D 图像上绘制相机轨迹',
+            bDesc: '直接在输入图像上画出期望的相机运动路径。',
+            cTitle: '提供相机参数',
+            cDesc: '由用户提供相机内参和连续的相机外参位姿序列。',
+
+            userInput: '用户输入',
+            videoOutput: '生成视频 · 真实输出',
+            prompt: '初始时，相机位于红色卡车后方略高的位置，沿道路方向向前观察，并使卡车尾部保持在画面中央附近。相机以恒定的跟随距离和高度平滑地随卡车向前移动。当卡车进入路口时，相机沿道路的缓慢左弯连续向左偏航，保持水平且不发生滚转。完成左转后，相机轨迹稍微向车道中央偏移，以安全绕过路边的路牌及其附近的电线杆，并保持足够间距，避免路牌或电线杆遮挡卡车。越过路牌后，相机应平滑地重新将卡车置于画面中央，并继续沿弯曲道路跟随。整个过程中保持焦距、相机高度、俯仰角和跟随距离稳定；不要变焦，不要突然加速或旋转，不要与场景物体发生碰撞，也不要产生明显抖动。',
+            start: '起点',
+            end: '终点',
+            providedInput: '用户提供的输入 · 249 个相机位姿',
+            uploaded: '由用户上传 · 共 249 个相机位姿',
+            intrinsics: '共享相机内参 K',
+            extrinsicExample: '展开的位姿示例 · 第 060 帧 · T_c2w',
+            pose: '4 × 4 位姿',
+            expanded: '已在上方展开',
+
+            sceneDesc: '先看「参考素材」明确标准答案，再看「候选视频」的拼接画面，最后完成 3 个问题。',
+            refHeading: '① 参考素材',
+            candHeading: '② 候选视频（拼接在同一画面中）',
+            answerHeading: '③ 请作答',
+            gtCaption: 'GT 标准视频（真实渲染结果，作为对照答案）',
+            trajCaption: '参考轨迹（相机由蓝色出发运动到红色位置停止）',
+            candNote: '画面中的 6 个小视频为 6 种模型的输出结果。',
+            q1: 'Q1 · 运动轨迹：哪段视频的相机运动最贴合参考轨迹，且运动连贯自然？',
+            q2: 'Q2 · 场景重现：哪段视频的物体位置最正确、建筑结构最合理？',
+            q3: 'Q3 · 生成质量：哪段视频的画质、细节最好，且没有出现轨迹线等多余元素？',
+
+            prev: '上一题',
+            next: '下一题',
+            submit: '提交调研结果',
+            submitting: '正在提交…',
+            successTitle: '✓ 提交成功，感谢参与！',
+            again: '再填一份',
+            needAnswer: '请先完成本题的所有选择，再进入下一题。'
+        },
+        en: {
+            pageTitle: 'AI-Generated Video Quality Study',
+            title: 'AI-Generated Video Quality Study',
+            subtitle: 'The model takes a scene image plus a user-specified trajectory as input and outputs a first-person video that moves along that trajectory. Compare the reference material with the candidate videos and pick the best one in each dimension.',
+
+            taskHeading: 'Task Overview',
+            task1: '<strong>Model input:</strong> one scene image plus a motion trajectory specified by the user in the reference view.',
+            task2: '<strong>Model output:</strong> a first-person video — the camera starts at the trajectory start point and moves along the path to the end.',
+            task3: '<strong>Your task:</strong> for each scene, review the <em>reference material</em> (GT video + reference trajectory) first, then the <em>candidate videos</em> (a tiled frame of models 2–7), and finally pick the single best candidate in each of the 3 dimensions.',
+            dim1Title: '① Camera motion',
+            dim1Desc: 'Does the camera follow the reference trajectory? Is the speed reasonable? Is the footage continuous, without shaking or jumps?',
+            dim2Title: '② Scene reconstruction',
+            dim2Desc: 'Are object positions correct and building structures plausible? Does the content match the input image, with no obvious distortion or objects appearing out of nowhere?',
+            dim3Title: '③ Generation quality',
+            dim3Desc: 'Sharpness and level of detail; any non-scene elements such as trajectory lines, flicker, blur, or artifacts.',
+            tip: '20 scenes in total, estimated 20–30 minutes. Every question is single-choice and required.',
+
+            inputHeading: 'Camera-Motion Input Preference',
+            inputDesc: 'Which input method would you most prefer for specifying camera motion? The images below are illustrative.',
+            inputLabel: 'Q · Which camera-motion input method would you prefer?',
+            inputHint: 'single choice, required',
+
+            aTitle: 'Text Description',
+            aDesc: 'Describe the intended camera motion in natural language.',
+            bTitle: 'Draw a 2D Camera Path',
+            bDesc: 'Draw the desired camera trajectory directly on the input image.',
+            cTitle: 'Provide Camera Parameters',
+            cDesc: 'Provide camera intrinsics and a sequence of extrinsic poses.',
+
+            userInput: 'USER INPUT',
+            videoOutput: 'GENERATED VIDEO · ACTUAL OUTPUT',
+            prompt: 'Begin with the camera centered behind and slightly above the red truck, looking forward along the road. Follow the truck smoothly at a constant distance and height, keeping its rear near the center of the frame. As the truck enters the intersection, follow the road’s gradual left turn with a continuous leftward yaw and no roll. After the turn, shift the camera path slightly toward the center of the lane to pass safely around the roadside sign and nearby utility pole, maintaining enough clearance to prevent either object from occluding the truck. Once clear of the sign, smoothly recenter the truck and continue following the curved road. Keep the focal length, camera height, pitch, and following distance stable; avoid zooming, sudden acceleration, abrupt rotation, collision, or visible jitter.',
+            start: 'START',
+            end: 'END',
+            providedInput: 'USER-PROVIDED INPUT · 249 CAMERA POSES',
+            uploaded: 'Uploaded by the user · 249 camera poses',
+            intrinsics: 'Shared intrinsics K',
+            extrinsicExample: 'Expanded pose example · Frame 060 · T_c2w',
+            pose: '4 × 4 pose',
+            expanded: 'expanded above',
+
+            sceneDesc: 'Review the reference material to establish the ground truth, then watch the tiled candidate videos, then answer the 3 questions.',
+            refHeading: '① Reference material',
+            candHeading: '② Candidate videos (tiled in one frame)',
+            answerHeading: '③ Your answers',
+            gtCaption: 'GT video (ground-truth render, used as the reference answer)',
+            trajCaption: 'Reference trajectory (camera starts at blue and stops at red)',
+            candNote: 'The 6 tiles show the outputs of 6 different models.',
+            q1: 'Q1 · Camera motion: which video follows the reference trajectory most faithfully and moves most naturally?',
+            q2: 'Q2 · Scene reconstruction: which video has the most correct object positions and the most plausible structures?',
+            q3: 'Q3 · Generation quality: which video has the best image quality and detail, with no stray elements such as trajectory lines?',
+
+            prev: 'Previous',
+            next: 'Next',
+            submit: 'Submit responses',
+            submitting: 'Submitting…',
+            successTitle: '✓ Submitted successfully — thank you!',
+            again: 'Fill in another',
+            needAnswer: 'Please answer every question on this page before continuing.'
+        }
+    };
+
     const sceneNames = [
-        "一", "二", "三", "四", "五", "六", "七", "八", "九", "十",
-        "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十"
+        '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
+        '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十'
     ];
 
-    const container = document.getElementById("sceneContainer");
+    let currentLanguage = localStorage.getItem('survey-language') === 'en' ? 'en' : 'zh';
+    const langToggle = document.getElementById('langToggle');
+    const statusEl = document.getElementById('status');
+    const form = document.getElementById('surveyForm');
+    const successBox = document.getElementById('successBox');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const progressWrap = document.getElementById('wizardProgress');
+
+    /* ============================================================
+       2. 生成场景区块（每题一个 step，默认隐藏）
+       ============================================================ */
+    const container = document.getElementById('sceneContainer');
 
     const options = (name) => Array.from({ length: 6 }, (_, i) => {
         const value = i + 1;
-        return `<label><input type="radio" name="${name}" value="${value}" ${value === 1 ? "required" : ""}> ${value} 号</label>`;
-    }).join("");
+        return `<label><input type="radio" name="${name}" value="${value}"> <span data-opt-num="${value}">${value} 号</span></label>`;
+    }).join('');
 
     container.innerHTML = sceneNames.map((cn, idx) => {
         const n = idx + 1;
-        const no = String(n).padStart(2, "0");
+        const no = String(n).padStart(2, '0');
 
         return `
         <!-- ================= 场景${cn} ================= -->
-        <section>
-            <h2>场景${cn}</h2>
-            <p class="section-desc">
+        <section class="wizard-step" data-scene="${n}" hidden>
+            <h2 data-scene-num="${n}">场景${cn}</h2>
+            <p class="section-desc" data-i18n="sceneDesc">
                 先看「参考素材」明确标准答案，再看「候选视频」的拼接画面，最后完成 3 个问题。
             </p>
 
-            <h3 class="block-title">① 参考素材</h3>
+            <h3 class="block-title" data-i18n="refHeading">① 参考素材</h3>
             <div class="ref-grid">
                 <figure>
-                    <video controls preload="metadata" playsinline>
-                        <source src="media/${no}_gt.mp4" type="video/mp4">
-                    </video>
-                    <figcaption>GT 标准视频（真实渲染结果，作为对照答案）</figcaption>
+                    <video controls preload="none" playsinline data-src="media/${no}_gt.mp4"></video>
+                    <figcaption data-i18n="gtCaption">GT 标准视频（真实渲染结果，作为对照答案）</figcaption>
                 </figure>
                 <figure>
-                    <img src="media/${no}_traj.png" alt="参考轨迹">
-                    <figcaption>参考轨迹（相机由蓝色出发运动到红色位置停止）</figcaption>
+                    <img data-src="media/${no}_traj.png" alt="参考轨迹">
+                    <figcaption data-i18n="trajCaption">参考轨迹（相机由蓝色出发运动到红色位置停止）</figcaption>
                 </figure>
             </div>
 
-            <h3 class="block-title">② 候选视频（拼接在同一画面中）</h3>
+            <h3 class="block-title" data-i18n="candHeading">② 候选视频（拼接在同一画面中）</h3>
             <div class="media-box">
-                <video controls preload="metadata" playsinline>
-                    <source src="media/${no}.mp4" type="video/mp4">
-                </video>
+                <video controls preload="none" playsinline data-src="media/${no}.mp4"></video>
             </div>
-            <p class="note-line">画面中的 6 个小视频为6种模型的输出结果。</p>
+            <p class="note-line" data-i18n="candNote">画面中的 6 个小视频为 6 种模型的输出结果。</p>
 
-            <h3 class="block-title">③ 请作答</h3>
+            <h3 class="block-title" data-i18n="answerHeading">③ 请作答</h3>
 
             <div class="field">
-                <label>Q1 · 运动轨迹：哪段视频的相机运动最贴合参考轨迹，且运动连贯自然？</label>
+                <label data-i18n="q1">Q1 · 运动轨迹：哪段视频的相机运动最贴合参考轨迹，且运动连贯自然？</label>
                 <div class="rating-group">
-                    ${options("traj_" + n)}
+                    ${options('traj_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label>Q2 · 场景重现：哪段视频的物体位置最正确、建筑结构最合理？</label>
+                <label data-i18n="q2">Q2 · 场景重现：哪段视频的物体位置最正确、建筑结构最合理？</label>
                 <div class="rating-group">
-                    ${options("const_" + n)}
+                    ${options('const_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label>Q3 · 生成质量：哪段视频的画质、细节最好，且没有出现轨迹线等多余元素？</label>
+                <label data-i18n="q3">Q3 · 生成质量：哪段视频的画质、细节最好，且没有出现轨迹线等多余元素？</label>
                 <div class="rating-group">
-                    ${options("qual_" + n)}
+                    ${options('qual_' + n)}
                 </div>
             </div>
         </section>
         `;
-    }).join("");
-})();
-</script>
-<script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
-<script>
-    const form = document.getElementById("surveyForm");
-    const successBox = document.getElementById("successBox");
-    const statusEl = document.getElementById("status");
+    }).join('');
 
-    const observer = new MutationObserver(() => {
-        // 提交成功后：隐藏整个表单，显示成功卡片
-        if (form.classList.contains("pageclip-form--success")) {
-            form.style.display = "none";
-            successBox.style.display = "block";
-            statusEl.textContent = "";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-        // 提交进行中：显示临时状态
-        else if (form.classList.contains("pageclip-form--submitting")) {
-            statusEl.textContent = "正在提交…";
-            statusEl.className = "";
-        }
-        // 从 submitting 回到正常（例如提交失败）时清空状态
-        else {
-            if (statusEl.textContent === "正在提交…") {
-                statusEl.textContent = "";
+    /* ============================================================
+       3. 向导：所有题目（第 1 题 = 输入方式偏好）
+       ============================================================ */
+    const steps = [
+        document.getElementById('stepPreference'),
+        ...Array.from(container.querySelectorAll('.wizard-step'))
+    ];
+    let currentStep = 0;
+
+    /* ---- 底部导航（单例，随当前题目移动） ---- */
+    const nav = document.createElement('div');
+    nav.className = 'wizard-nav';
+    nav.innerHTML = `
+        <button type="button" class="btn ghost" id="prevBtn">上一题</button>
+        <button type="button" class="btn" id="nextBtn">下一题</button>
+        <button type="submit" class="btn" id="submitBtn" hidden>提交调研结果</button>
+        <p class="wizard-error" id="navError" hidden></p>
+    `;
+    const prevBtn = nav.querySelector('#prevBtn');
+    const nextBtn = nav.querySelector('#nextBtn');
+    const submitBtn = nav.querySelector('#submitBtn');
+    const navError = nav.querySelector('#navError');
+
+    /* ============================================================
+       4. 媒体预加载（加速下一题视频加载）
+       ============================================================ */
+    const preloadHost = document.createElement('div');
+    preloadHost.className = 'preload-host';
+    preloadHost.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(preloadHost);
+
+    const preloaded = new Map();
+    const LOOKAHEAD = 2;
+
+    function mediaUrlsOf(step) {
+        const urls = [];
+        if (!step) return urls;
+        step.querySelectorAll('[data-src]').forEach((el) => urls.push(el.dataset.src));
+        return urls;
+    }
+
+    function preloadStep(index) {
+        if (index < 0 || index >= steps.length) return;
+        mediaUrlsOf(steps[index]).forEach((url) => {
+            if (!url || preloaded.has(url)) return;
+
+            if (/\.(mp4|webm|ogv|mov)(\?|$)/i.test(url)) {
+                const v = document.createElement('video');
+                v.preload = 'auto';
+                v.muted = true;
+                v.playsInline = true;
+                v.setAttribute('aria-hidden', 'true');
+                v.src = url;
+                preloadHost.appendChild(v);
+                v.load();
+                preloaded.set(url, v);
+            } else {
+                const img = new Image();
+                img.decoding = 'async';
+                img.src = url;
+                preloaded.set(url, img);
             }
+        });
+    }
+
+    function trimPreloads(index) {
+        const keep = new Set();
+        for (let i = index; i <= index + LOOKAHEAD; i++) {
+            mediaUrlsOf(steps[i]).forEach((u) => keep.add(u));
+        }
+        preloaded.forEach((el, url) => {
+            if (keep.has(url)) return;
+            if (el.tagName === 'VIDEO') {
+                el.removeAttribute('src');
+                try { el.load(); } catch (e) {}
+                el.remove();
+            } else {
+                el.src = '';
+            }
+            preloaded.delete(url);
+        });
+    }
+
+    /** 把当前题目的媒体挂到 DOM 上；同一题内多个视频等全部就绪后停在同一时间点 */
+    function attachMedia(step) {
+        if (!step) return;
+
+        step.querySelectorAll('video[data-src]').forEach((v) => {
+            if (v.hasAttribute('src')) return;
+            v.preload = 'auto';
+            v.setAttribute('src', v.dataset.src);
+            v.load();
+        });
+
+        step.querySelectorAll('img[data-src]').forEach((img) => {
+            if (img.hasAttribute('src')) return;
+            img.setAttribute('src', img.dataset.src);
+        });
+
+        const vids = Array.from(step.querySelectorAll('video'));
+        if (vids.length > 1) {
+            let readyCount = 0;
+            vids.forEach((v) => {
+                const markReady = () => {
+                    readyCount++;
+                    if (readyCount !== vids.length) return;
+                    // 只在首次进入该题时统一到代表性画面，切回时保留用户进度
+                    if (step.dataset.mediaInitialized === '1') return;
+                    step.dataset.mediaInitialized = '1';
+
+                    const durations = vids.map((x) =>
+                        (isFinite(x.duration) && x.duration > 0 ? x.duration : Infinity)
+                    );
+                    const minDur = Math.min(...durations);
+                    const target = Number.isFinite(minDur) ? Math.min(1.5, minDur / 3) : 1.5;
+                    vids.forEach((x) => {
+                        try { x.currentTime = target; } catch (e) {}
+                    });
+                };
+                if (v.readyState >= 1) markReady();
+                else v.addEventListener('loadedmetadata', markReady, { once: true });
+            });
+        }
+    }
+
+    /* ============================================================
+       4.5 同一场景内两个视频的联动播放
+           点击任意一个的播放/暂停/进度条，另一个同步跟随
+       ============================================================ */
+    function linkVideos(step) {
+        const vids = Array.from(step.querySelectorAll('video'));
+        if (vids.length !== 2) return;
+
+        const [a, b] = vids;
+        let syncing = false;
+
+        const syncCurrentTime = (from, to) => {
+            if (!isFinite(from.currentTime)) return;
+            if (to.readyState < 1) return;                 // 目标还没元数据，seek 无效
+            if (Math.abs(to.currentTime - from.currentTime) < 0.15) return;
+            try { to.currentTime = from.currentTime; } catch (e) {}
+        };
+
+        vids.forEach((video) => {
+            const other = video === a ? b : a;
+
+            // 播放：先对齐进度，再带动另一个一起播
+            video.addEventListener('play', () => {
+                if (syncing) return;
+                syncing = true;
+
+                const atEnd = isFinite(video.duration)
+                    && video.duration > 0
+                    && video.currentTime >= video.duration - 0.05;
+
+                if (atEnd) {
+                    // 从结尾重新播放时，两个都回到开头，保证同步
+                    try { video.currentTime = 0; } catch (e) {}
+                    try { if (other.readyState >= 1) other.currentTime = 0; } catch (e) {}
+                } else {
+                    syncCurrentTime(video, other);
+                }
+
+                if (other.paused) {
+                    const p = other.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                }
+                syncing = false;
+            });
+
+            // 暂停：另一个也暂停
+            video.addEventListener('pause', () => {
+                if (syncing) return;
+                syncing = true;
+                if (!other.paused) other.pause();
+                syncing = false;
+            });
+
+            // 拖动进度条：另一个跟随
+            video.addEventListener('seeked', () => {
+                if (syncing) return;
+                syncing = true;
+                syncCurrentTime(video, other);
+                syncing = false;
+            });
+
+            // 倍速：另一个跟随
+            video.addEventListener('ratechange', () => {
+                if (syncing) return;
+                syncing = true;
+                if (other.playbackRate !== video.playbackRate) {
+                    other.playbackRate = video.playbackRate;
+                }
+                syncing = false;
+            });
+
+            // 播放中轻微漂移校正（偏差较大时才纠正，避免频繁 seek 抖动）
+            video.addEventListener('timeupdate', () => {
+                if (video.paused || other.paused) return;
+                if (Math.abs(other.currentTime - video.currentTime) > 0.5) {
+                    try { other.currentTime = video.currentTime; } catch (e) {}
+                }
+            });
+
+            // 一个播完：另一个也停下，并把进度对齐到结束位置
+            video.addEventListener('ended', () => {
+                if (syncing) return;
+                syncing = true;
+                if (!other.paused) other.pause();
+                try {
+                    if (other.readyState >= 1) {
+                        const t = Math.min(video.currentTime, other.duration || video.currentTime);
+                        other.currentTime = t;
+                    }
+                } catch (e) {}
+                syncing = false;
+            });
+        });
+    }
+
+    /* ============================================================
+       5. 题目切换逻辑
+       ============================================================ */
+    function updateProgress(index) {
+        const total = steps.length;
+        const pct = ((index + 1) / total) * 100;
+        progressFill.style.width = pct + '%';
+        progressText.textContent = currentLanguage === 'zh'
+            ? `第 ${index + 1} / ${total} 题`
+            : `Question ${index + 1} of ${total}`;
+    }
+
+    function showStep(index, opts) {
+        const options_ = opts || {};
+        index = Math.max(0, Math.min(steps.length - 1, index));
+
+        // 离开当前题目前，暂停其中的视频，避免后台继续播放
+        const leaving = steps[currentStep];
+        if (leaving && leaving !== steps[index]) {
+            leaving.querySelectorAll('video').forEach((v) => {
+                if (!v.paused) v.pause();
+            });
+        }
+
+        currentStep = index;
+
+        steps.forEach((s, i) => {
+            s.hidden = i !== index;
+            s.classList.toggle('is-active', i === index);
+        });
+
+        const step = steps[index];
+        step.appendChild(nav);           // 导航跟着当前题目走
+
+        prevBtn.hidden = index === 0;
+        nextBtn.hidden = index === steps.length - 1;
+        submitBtn.hidden = index !== steps.length - 1;
+
+        navError.hidden = true;
+        navError.textContent = '';
+
+        attachMedia(step);               // 当前题：立即加载
+        preloadStep(index + 1);          // 预加载下一题
+        preloadStep(index + 2);          // 再下一题
+        trimPreloads(index);             // 释放远处的资源
+
+        updateProgress(index);
+
+        if (options_.scroll !== false) {
+            progressWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function validateStep(step) {
+        const names = new Set();
+        step.querySelectorAll('input[type="radio"][name]').forEach((i) => names.add(i.name));
+
+        let ok = true;
+        names.forEach((name) => {
+            const group = Array.from(step.querySelectorAll(`input[name="${name}"]`));
+            const checked = group.some((i) => i.checked);
+            const wrap = group[0].closest('.rating-group') || group[0].closest('.method-grid');
+            if (wrap) wrap.classList.toggle('missing', !checked);
+            if (!checked) ok = false;
+        });
+        return ok;
+    }
+
+    function goNext() {
+        const step = steps[currentStep];
+        if (!validateStep(step)) {
+            navError.textContent = translations[currentLanguage].needAnswer;
+            navError.hidden = false;
+            const firstMissing = step.querySelector('.missing');
+            if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        showStep(currentStep + 1);
+    }
+
+    nextBtn.addEventListener('click', goNext);
+    prevBtn.addEventListener('click', () => showStep(currentStep - 1));
+
+    // 兜底：提交前再整体校验一次（捕获阶段，先于 Pageclip 处理）
+    form.addEventListener('submit', function (e) {
+        for (let i = 0; i < steps.length; i++) {
+            if (!validateStep(steps[i])) {
+                e.preventDefault();
+                e.stopPropagation();
+                showStep(i);
+                navError.textContent = translations[currentLanguage].needAnswer;
+                navError.hidden = false;
+                return;
+            }
+        }
+    }, true);
+
+    /* ============================================================
+       6. 语言应用
+       ============================================================ */
+    function applyLanguage(lang) {
+        currentLanguage = lang;
+        const dict = translations[lang];
+
+        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        document.title = dict.pageTitle;
+
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+            const key = el.dataset.i18n;
+            if (dict[key] !== undefined) el.textContent = dict[key];
+        });
+
+        document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+            const key = el.dataset.i18nHtml;
+            if (dict[key] !== undefined) el.innerHTML = dict[key];
+        });
+
+        document.querySelectorAll('[data-scene-num]').forEach((el) => {
+            const n = Number(el.dataset.sceneNum);
+            el.textContent = lang === 'zh' ? `场景${sceneNames[n - 1]}` : `Scene ${n}`;
+        });
+
+        document.querySelectorAll('[data-opt-num]').forEach((el) => {
+            const n = Number(el.dataset.optNum);
+            el.textContent = lang === 'zh' ? `${n} 号` : `Option ${n}`;
+        });
+
+        document.querySelectorAll('[data-frame]').forEach((el) => {
+            const f = el.dataset.frame;
+            el.textContent = lang === 'zh' ? `第 ${f} 帧` : `Frame ${f}`;
+        });
+
+        prevBtn.textContent = dict.prev;
+        nextBtn.textContent = dict.next;
+        submitBtn.textContent = dict.submit;
+
+        updateProgress(currentStep);
+
+        const opts = langToggle.querySelectorAll('.lang-opt');
+        opts[0].classList.toggle('active', lang === 'en');
+        opts[1].classList.toggle('active', lang === 'zh');
+        langToggle.setAttribute('aria-pressed', lang === 'zh');
+        langToggle.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换为中文');
+
+        if (statusEl.dataset.state === 'submitting') {
+            statusEl.textContent = dict.submitting;
+        }
+
+        localStorage.setItem('survey-language', lang);
+    }
+
+    langToggle.addEventListener('click', () => {
+        applyLanguage(currentLanguage === 'en' ? 'zh' : 'en');
+    });
+
+    /* ============================================================
+       7. Pageclip 提交状态
+       ============================================================ */
+    const observer = new MutationObserver(() => {
+        if (form.classList.contains('pageclip-form--success')) {
+            form.style.display = 'none';
+            successBox.style.display = 'block';
+            statusEl.textContent = '';
+            statusEl.dataset.state = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        else if (form.classList.contains('pageclip-form--submitting')) {
+            statusEl.dataset.state = 'submitting';
+            statusEl.textContent = translations[currentLanguage].submitting;
+            statusEl.className = '';
+            submitBtn.disabled = true;
+        }
+        else if (statusEl.dataset.state === 'submitting') {
+            statusEl.dataset.state = '';
+            statusEl.textContent = '';
+            submitBtn.disabled = false;
         }
     });
 
-    observer.observe(form, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(form, { attributes: true, attributeFilter: ['class'] });
+
+    /* ============================================================
+       8. 初始化
+       ============================================================ */
+    // 为每个场景题的两个视频绑定联动播放
+    document.querySelectorAll('.wizard-step[data-scene]').forEach(linkVideos);
+
+    applyLanguage(currentLanguage);
+    showStep(0, { scroll: false });
+
+})();
 </script>
 
 </body>
