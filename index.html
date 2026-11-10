@@ -424,7 +424,7 @@
     </button>
     <h1 data-i18n="title">AI 生成视频质量调研</h1>
     <p class="subtitle" data-i18n="subtitle">
-        接下来有 20 个场景。每个场景先看参考视频和参考轨迹，再从 6 个候选视频里选出每个问题中表现最好的一个。按页面提示一步步来就好，预计 20–30 分钟。
+        接下来有 21个题目。请按页面提示一步步完成本次问卷，预计 20–30 分钟。
     </p>
 </header>
 
@@ -644,7 +644,7 @@
             trajCaption: '参考轨迹：相机从蓝色起点移动到红色终点',
             candNote: '画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。',
             q1: '运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1 个。',
-            q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面？请选 1 个。',
+            q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1 个。',
             q3: '生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1 个。',
 
             prev: '上一题',
@@ -692,7 +692,7 @@
             trajCaption: 'Reference trajectory — the camera moves from the blue start to the red end',
             candNote: 'The 6 tiles come from 6 different models. Play, pause, or scrub to compare them carefully.',
             q1: 'Camera motion: after reviewing the reference trajectory and candidate videos, which option follows the reference most faithfully and looks most natural and continuous? Choose 1.',
-            q2: 'Scene reconstruction: After watching the candidate videos above, which one best matches the reference frame in object placement and building structure? Anything visible in the frame should line up with the reference image; for parts you cannot see, the model just needs to generate something plausible. Please choose 1.',
+            q2: 'Scene reconstruction: After reviewing the candidate videos above, which option has object positions and building structures closest to the reference frame? Visible parts should match the <strong>reference image</strong>, while unseen parts only need to be generated plausibly. Please choose 1.',
             q3: 'Generation quality: which option has the best image quality and detail, without stray trajectory lines, flicker, or blur? Choose 1.',
 
             prev: 'Previous',
@@ -769,7 +769,7 @@
             </div>
 
             <div class="field">
-                <label data-i18n="q2">场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与参考图像一致，看不见的部分模型生成合理即可。？请选 1 个。</label>
+                <label data-i18n-html="q2">场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1 个。</label>
                 <div class="rating-group">
                     ${options('const_' + n)}
                 </div>
