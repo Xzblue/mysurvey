@@ -59,38 +59,6 @@
         }
         .section-desc { color: var(--muted); font-size: 0.86rem; margin-bottom: 18px; }
 
-        /* ===== 任务说明 ===== */
-        .task-list { list-style: none; margin: 0; }
-        .task-list li {
-            position: relative; padding-left: 22px; margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        .task-list li:last-child { margin-bottom: 0; }
-        .task-list li::before {
-            content: ""; position: absolute; left: 6px; top: 0.65em;
-            width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
-        }
-        .task-list strong { color: #fff; font-weight: 600; }
-
-        .dim-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 12px; margin-top: 18px;
-        }
-        @media (max-width: 640px) { .dim-grid { grid-template-columns: 1fr; } }
-        .dim-card {
-            background: #0d1117; border: 1px solid var(--border);
-            border-radius: 8px; padding: 14px;
-        }
-        .dim-card .dim-title {
-            font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 4px;
-        }
-        .dim-card .dim-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
-
-        .tip-line {
-            margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border);
-            font-size: 0.82rem; color: var(--muted);
-        }
-
         /* ===== 场景内分块 ===== */
         .block-title {
             font-size: 0.95rem; font-weight: 600; margin: 26px 0 12px;
@@ -456,41 +424,9 @@
     </button>
     <h1 data-i18n="title">AI 生成视频质量调研</h1>
     <p class="subtitle" data-i18n="subtitle">
-        模型输入「场景图片 + 用户指定轨迹」，输出「沿轨迹运动的第一视角视频」。
-        请对比参考素材与候选视频，选出每个维度下表现最好的一个。
+        接下来有 20 个场景。每个场景先看参考视频和参考轨迹，再从 6 个候选视频里选出每个问题中表现最好的一个。按页面提示一步步来就好，预计 20–30 分钟。
     </p>
 </header>
-
-<!-- ========== 任务说明（全站只出现一次） ========== -->
-<section>
-    <h2 data-i18n="taskHeading">任务说明</h2>
-
-    <ul class="task-list">
-        <li data-i18n-html="task1"><strong>模型输入：</strong>一张场景图片，以及一条用户在参考视图中指定的运动轨迹。</li>
-        <li data-i18n-html="task2"><strong>模型输出：</strong>一段第一视角视频——相机从轨迹起点出发，沿轨迹运动到终点。</li>
-        <li data-i18n-html="task3"><strong>你的任务：</strong>每个场景先看「参考素材」（GT 标准视频 + 参考轨迹），再看「候选视频」（2–7 号拼接画面），最后在 3 个维度上各选出 1 个最好的候选视频。</li>
-    </ul>
-
-    <div class="dim-grid">
-        <div class="dim-card">
-            <div class="dim-title" data-i18n="dim1Title">① 运动轨迹</div>
-            <div class="dim-desc" data-i18n="dim1Desc">相机运动是否贴合参考轨迹，速度快慢是否合理，画面是否连贯、不抖动、不跳变。</div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-title" data-i18n="dim2Title">② 场景重现</div>
-            <div class="dim-desc" data-i18n="dim2Desc">物体位置是否正确、建筑结构是否合理，场景内容是否与输入图片一致、没有明显变形或凭空出现。</div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-title" data-i18n="dim3Title">③ 生成质量</div>
-            <div class="dim-desc" data-i18n="dim3Desc">画质清晰度、细节表现，是否出现轨迹线等非场景元素、闪烁、模糊或伪影。</div>
-        </div>
-    </div>
-
-    <p class="tip-line" data-i18n="tip">
-        共 20 个场景，预计用时 20–30 分钟。所有题目均为单选且必答。
-    </p>
-</section>
-
 
 <form id="surveyForm"
       action="https://send.pageclip.co/d5qrOrsUcO6eVJyrr11zccjmMq5AEXaW/survey"
@@ -505,14 +441,14 @@
 
     <!-- ========== 输入方式偏好（第 1 题） ========== -->
     <section class="wizard-step" id="stepPreference">
-        <h2 data-i18n="inputHeading">输入方式偏好</h2>
+        <h2 data-i18n="inputHeading">你更喜欢怎么告诉模型镜头怎么动？</h2>
         <p class="section-desc" data-i18n="inputDesc">
-            请选择你认为最适合用于指定相机运动轨迹的输入方式。以下截图为示意。
+            先做个选择：如果你有一张图片，想让相机按你的想法运动，下面三种方式，你最愿意用哪一种？可以点开每种方式的示例再选。
         </p>
 
         <div class="field">
             <label>
-                <span data-i18n="inputLabel">Q · 你更偏好哪种轨迹输入方式？</span><span class="hint" data-i18n="inputHint">单选，必答</span>
+                <span data-i18n="inputLabel">你更愿意用哪种方式描述相机运动？</span><span class="hint" data-i18n="inputHint">选 1 个，必答</span>
             </label>
 
             <div class="method-grid">
@@ -523,8 +459,8 @@
                     <span class="radio-dot" aria-hidden="true"></span>
                     <span class="method-letter">A</span>
                     <span class="method-head">
-                        <span class="method-name" data-i18n="aTitle">文本描述</span>
-                        <span class="method-desc" data-i18n="aDesc">使用自然语言详细描述期望的相机运动。</span>
+                        <span class="method-name" data-i18n="aTitle">用文字描述</span>
+                        <span class="method-desc" data-i18n="aDesc">像写提示词一样，用一段话说明镜头要怎么移动。</span>
                     </span>
 
                     <span class="comparison-grid">
@@ -550,8 +486,8 @@
                     <span class="radio-dot" aria-hidden="true"></span>
                     <span class="method-letter">B</span>
                     <span class="method-head">
-                        <span class="method-name" data-i18n="bTitle">在 2D 图像上绘制相机轨迹</span>
-                        <span class="method-desc" data-i18n="bDesc">直接在输入图像上画出期望的相机运动路径。</span>
+                        <span class="method-name" data-i18n="bTitle">在图片上画轨迹</span>
+                        <span class="method-desc" data-i18n="bDesc">直接在图片上画出相机要走的路线，起点和终点一目了然。</span>
                     </span>
 
                     <span class="comparison-grid">
@@ -588,8 +524,8 @@
                     <span class="radio-dot" aria-hidden="true"></span>
                     <span class="method-letter">C</span>
                     <span class="method-head">
-                        <span class="method-name" data-i18n="cTitle">提供相机参数</span>
-                        <span class="method-desc" data-i18n="cDesc">由用户提供相机内参和连续的相机外参位姿序列。</span>
+                        <span class="method-name" data-i18n="cTitle">上传相机参数</span>
+                        <span class="method-desc" data-i18n="cDesc">上传相机内参和一连串位姿，适合更技术化的控制方式。</span>
                     </span>
 
                     <span class="comparison-grid">
@@ -674,31 +610,19 @@
         zh: {
             pageTitle: 'AI 生成视频质量调研',
             title: 'AI 生成视频质量调研',
-            subtitle: '模型输入「场景图片 + 用户指定轨迹」，输出「沿轨迹运动的第一视角视频」。请对比参考素材与候选视频，选出每个维度下表现最好的一个。',
+            subtitle: '接下来有 20 个场景。每个场景先看参考视频和参考轨迹，再从 6 个候选视频里选出每个问题中表现最好的一个。按页面提示一步步来就好，预计 20–30 分钟。',
 
-            taskHeading: '任务说明',
-            task1: '<strong>模型输入：</strong>一张场景图片，以及一条用户在参考视图中指定的运动轨迹。',
-            task2: '<strong>模型输出：</strong>一段第一视角视频——相机从轨迹起点出发，沿轨迹运动到终点。',
-            task3: '<strong>你的任务：</strong>每个场景先看「参考素材」（GT 标准视频 + 参考轨迹），再看「候选视频」（2–7 号拼接画面），最后在 3 个维度上各选出 1 个最好的候选视频。',
-            dim1Title: '① 运动轨迹',
-            dim1Desc: '相机运动是否贴合参考轨迹，速度快慢是否合理，画面是否连贯、不抖动、不跳变。',
-            dim2Title: '② 场景重现',
-            dim2Desc: '物体位置是否正确、建筑结构是否合理，场景内容是否与输入图片一致、没有明显变形或凭空出现。',
-            dim3Title: '③ 生成质量',
-            dim3Desc: '画质清晰度、细节表现，是否出现轨迹线等非场景元素、闪烁、模糊或伪影。',
-            tip: '共 20 个场景，预计用时 20–30 分钟。所有题目均为单选且必答。',
+            inputHeading: '你更喜欢怎么告诉模型镜头怎么动？',
+            inputDesc: '先做个选择：如果你有一张图片，想让相机按你的想法运动，下面三种方式，你最愿意用哪一种？可以点开每种方式的示例再选。',
+            inputLabel: '你更愿意用哪种方式描述相机运动？',
+            inputHint: '选 1 个，必答',
 
-            inputHeading: '输入方式偏好',
-            inputDesc: '请选择你认为最适合用于指定相机运动轨迹的输入方式。以下截图为示意。',
-            inputLabel: 'Q · 你更偏好哪种轨迹输入方式？',
-            inputHint: '单选，必答',
-
-            aTitle: '文本描述',
-            aDesc: '使用自然语言详细描述期望的相机运动。',
-            bTitle: '在 2D 图像上绘制相机轨迹',
-            bDesc: '直接在输入图像上画出期望的相机运动路径。',
-            cTitle: '提供相机参数',
-            cDesc: '由用户提供相机内参和连续的相机外参位姿序列。',
+            aTitle: '用文字描述',
+            aDesc: '像写提示词一样，用一段话说明镜头要怎么移动。',
+            bTitle: '在图片上画轨迹',
+            bDesc: '直接在图片上画出相机要走的路线，起点和终点一目了然。',
+            cTitle: '上传相机参数',
+            cDesc: '上传相机内参和一连串位姿，适合更技术化的控制方式。',
 
             userInput: '用户输入',
             videoOutput: '生成视频 · 真实输出',
@@ -712,16 +636,16 @@
             pose: '4 × 4 位姿',
             expanded: '已在上方展开',
 
-            sceneDesc: '先看「参考素材」明确标准答案，再看「候选视频」的拼接画面，最后完成 3 个问题。',
-            refHeading: '① 参考素材',
-            candHeading: '② 候选视频（拼接在同一画面中）',
-            answerHeading: '③ 请作答',
-            gtCaption: 'GT 标准视频（真实渲染结果，作为对照答案）',
-            trajCaption: '参考轨迹（相机由蓝色出发运动到红色位置停止）',
-            candNote: '画面中的 6 个小视频为 6 种模型的输出结果。',
-            q1: 'Q1 · 运动轨迹：哪段视频的相机运动最贴合参考轨迹，且运动连贯自然？',
-            q2: 'Q2 · 场景重现：哪段视频的物体位置最正确、建筑结构最合理？',
-            q3: 'Q3 · 生成质量：哪段视频的画质、细节最好，且没有出现轨迹线等多余元素？',
+            sceneDesc: '这个场景里，你会先看到参考视频和参考轨迹，再看到 6 个候选视频拼成的画面。看完后，请分别回答下面 3 个问题，每题都从 1–6 号中选 1 个最符合的。',
+            refHeading: '先看参考：GT 视频 + 参考轨迹',
+            candHeading: '再看候选：6 个模型输出拼在一起',
+            answerHeading: '现在选一选：每题选 1 个候选视频',
+            gtCaption: 'GT 视频：可以理解为这个场景的“参考答案”',
+            trajCaption: '参考轨迹：相机从蓝色起点移动到红色终点',
+            candNote: '画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。',
+            q1: '运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1 个。',
+            q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面？请选 1 个。',
+            q3: '生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1 个。',
 
             prev: '上一题',
             next: '下一题',
@@ -734,31 +658,19 @@
         en: {
             pageTitle: 'AI-Generated Video Quality Study',
             title: 'AI-Generated Video Quality Study',
-            subtitle: 'The model takes a scene image plus a user-specified trajectory as input and outputs a first-person video that moves along that trajectory. Compare the reference material with the candidate videos and pick the best one in each dimension.',
+            subtitle: 'There are 20 scenes. For each one, first review the reference video and trajectory, then pick the best candidate video for each question. Just follow the on-screen prompts — about 20–30 minutes in total.',
 
-            taskHeading: 'Task Overview',
-            task1: '<strong>Model input:</strong> one scene image plus a motion trajectory specified by the user in the reference view.',
-            task2: '<strong>Model output:</strong> a first-person video — the camera starts at the trajectory start point and moves along the path to the end.',
-            task3: '<strong>Your task:</strong> for each scene, review the <em>reference material</em> (GT video + reference trajectory) first, then the <em>candidate videos</em> (a tiled frame of models 2–7), and finally pick the single best candidate in each of the 3 dimensions.',
-            dim1Title: '① Camera motion',
-            dim1Desc: 'Does the camera follow the reference trajectory? Is the speed reasonable? Is the footage continuous, without shaking or jumps?',
-            dim2Title: '② Scene reconstruction',
-            dim2Desc: 'Are object positions correct and building structures plausible? Does the content match the input image, with no obvious distortion or objects appearing out of nowhere?',
-            dim3Title: '③ Generation quality',
-            dim3Desc: 'Sharpness and level of detail; any non-scene elements such as trajectory lines, flicker, blur, or artifacts.',
-            tip: '20 scenes in total, estimated 20–30 minutes. Every question is single-choice and required.',
+            inputHeading: 'How would you prefer to describe camera motion?',
+            inputDesc: 'First, a quick choice: if you had one image and wanted the camera to move the way you imagine, which of these three ways would you most like to use? Feel free to check the example for each method before choosing.',
+            inputLabel: 'Which way would you prefer to describe camera motion?',
+            inputHint: 'choose 1, required',
 
-            inputHeading: 'Camera-Motion Input Preference',
-            inputDesc: 'Which input method would you most prefer for specifying camera motion? The images below are illustrative.',
-            inputLabel: 'Q · Which camera-motion input method would you prefer?',
-            inputHint: 'single choice, required',
-
-            aTitle: 'Text Description',
-            aDesc: 'Describe the intended camera motion in natural language.',
-            bTitle: 'Draw a 2D Camera Path',
-            bDesc: 'Draw the desired camera trajectory directly on the input image.',
-            cTitle: 'Provide Camera Parameters',
-            cDesc: 'Provide camera intrinsics and a sequence of extrinsic poses.',
+            aTitle: 'Describe it in words',
+            aDesc: 'Write a prompt-like description of how the camera should move.',
+            bTitle: 'Draw a path on the image',
+            bDesc: 'Draw the camera route directly on the image, with a clear start and end.',
+            cTitle: 'Upload camera parameters',
+            cDesc: 'Upload intrinsics and a sequence of camera poses — a more technical option.',
 
             userInput: 'USER INPUT',
             videoOutput: 'GENERATED VIDEO · ACTUAL OUTPUT',
@@ -772,16 +684,16 @@
             pose: '4 × 4 pose',
             expanded: 'expanded above',
 
-            sceneDesc: 'Review the reference material to establish the ground truth, then watch the tiled candidate videos, then answer the 3 questions.',
-            refHeading: '① Reference material',
-            candHeading: '② Candidate videos (tiled in one frame)',
-            answerHeading: '③ Your answers',
-            gtCaption: 'GT video (ground-truth render, used as the reference answer)',
-            trajCaption: 'Reference trajectory (camera starts at blue and stops at red)',
-            candNote: 'The 6 tiles show the outputs of 6 different models.',
-            q1: 'Q1 · Camera motion: which video follows the reference trajectory most faithfully and moves most naturally?',
-            q2: 'Q2 · Scene reconstruction: which video has the most correct object positions and the most plausible structures?',
-            q3: 'Q3 · Generation quality: which video has the best image quality and detail, with no stray elements such as trajectory lines?',
+            sceneDesc: 'In this scene, you will first see the reference video and trajectory, then a single frame tiled with 6 candidate videos. After watching, answer the 3 questions below; for each one, choose 1 option from 1–6.',
+            refHeading: 'Step 1 · Review the reference (GT video + trajectory)',
+            candHeading: 'Step 2 · Compare the candidates (6 model outputs in one frame)',
+            answerHeading: 'Step 3 · Choose one candidate per question',
+            gtCaption: 'GT video — think of it as the reference answer for this scene',
+            trajCaption: 'Reference trajectory — the camera moves from the blue start to the red end',
+            candNote: 'The 6 tiles come from 6 different models. Play, pause, or scrub to compare them carefully.',
+            q1: 'Camera motion: after reviewing the reference trajectory and candidate videos, which option follows the reference most faithfully and looks most natural and continuous? Choose 1.',
+            q2: 'Scene reconstruction: After watching the candidate videos above, which one best matches the reference frame in object placement and building structure? Anything visible in the frame should line up with the reference image; for parts you cannot see, the model just needs to generate something plausible. Please choose 1.',
+            q3: 'Generation quality: which option has the best image quality and detail, without stray trajectory lines, flicker, or blur? Choose 1.',
 
             prev: 'Previous',
             next: 'Next',
@@ -826,45 +738,45 @@
         <section class="wizard-step" data-scene="${n}" hidden>
             <h2 data-scene-num="${n}">场景${cn}</h2>
             <p class="section-desc" data-i18n="sceneDesc">
-                先看「参考素材」明确标准答案，再看「候选视频」的拼接画面，最后完成 3 个问题。
+                这个场景里，你会先看到参考视频和参考轨迹，再看到 6 个候选视频拼成的画面。看完后，请分别回答下面 3 个问题，每题都从 1–6 号中选 1 个最符合的。
             </p>
 
-            <h3 class="block-title" data-i18n="refHeading">① 参考素材</h3>
+            <h3 class="block-title" data-i18n="refHeading">先看参考：GT 视频 + 参考轨迹</h3>
             <div class="ref-grid">
                 <figure>
                     <video controls preload="none" playsinline data-src="media/${no}_gt.mp4"></video>
-                    <figcaption data-i18n="gtCaption">GT 标准视频（真实渲染结果，作为对照答案）</figcaption>
+                    <figcaption data-i18n="gtCaption">GT 视频：可以理解为这个场景的“参考答案”</figcaption>
                 </figure>
                 <figure>
                     <img data-src="media/${no}_traj.png" alt="参考轨迹">
-                    <figcaption data-i18n="trajCaption">参考轨迹（相机由蓝色出发运动到红色位置停止）</figcaption>
+                    <figcaption data-i18n="trajCaption">参考轨迹：相机从蓝色起点移动到红色终点</figcaption>
                 </figure>
             </div>
 
-            <h3 class="block-title" data-i18n="candHeading">② 候选视频（拼接在同一画面中）</h3>
+            <h3 class="block-title" data-i18n="candHeading">再看候选：6 个模型输出拼在一起</h3>
             <div class="media-box">
                 <video controls preload="none" playsinline data-src="media/${no}.mp4"></video>
             </div>
-            <p class="note-line" data-i18n="candNote">画面中的 6 个小视频为 6 种模型的输出结果。</p>
+            <p class="note-line" data-i18n="candNote">画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。</p>
 
-            <h3 class="block-title" data-i18n="answerHeading">③ 请作答</h3>
+            <h3 class="block-title" data-i18n="answerHeading">现在选一选：每题选 1 个候选视频</h3>
 
             <div class="field">
-                <label data-i18n="q1">Q1 · 运动轨迹：哪段视频的相机运动最贴合参考轨迹，且运动连贯自然？</label>
+                <label data-i18n="q1">运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1 个。</label>
                 <div class="rating-group">
                     ${options('traj_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label data-i18n="q2">Q2 · 场景重现：哪段视频的物体位置最正确、建筑结构最合理？</label>
+                <label data-i18n="q2">场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与参考图像一致，看不见的部分模型生成合理即可。？请选 1 个。</label>
                 <div class="rating-group">
                     ${options('const_' + n)}
                 </div>
             </div>
 
             <div class="field">
-                <label data-i18n="q3">Q3 · 生成质量：哪段视频的画质、细节最好，且没有出现轨迹线等多余元素？</label>
+                <label data-i18n="q3">生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1 个。</label>
                 <div class="rating-group">
                     ${options('qual_' + n)}
                 </div>
@@ -1203,11 +1115,6 @@
         document.querySelectorAll('[data-i18n]').forEach((el) => {
             const key = el.dataset.i18n;
             if (dict[key] !== undefined) el.textContent = dict[key];
-        });
-
-        document.querySelectorAll('[data-i18n-html]').forEach((el) => {
-            const key = el.dataset.i18nHtml;
-            if (dict[key] !== undefined) el.innerHTML = dict[key];
         });
 
         document.querySelectorAll('[data-scene-num]').forEach((el) => {
