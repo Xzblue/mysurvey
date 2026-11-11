@@ -654,7 +654,7 @@
             candNote: '画面里的 6 个小视频分别来自 6 个模型。可以播放、暂停、拖动进度，慢慢对比。',
             q1: '运动轨迹：看完参考轨迹和上面的候选视频后，哪一号的相机运动最贴合参考轨迹、看起来最连贯自然？请选 1–2 个。',
             q2: '场景重现：看完上面的候选视频后，哪一号里的物体位置和建筑结构最接近参考画面，画面中看得见的部分应与<strong>参考图像</strong>一致，看不见的部分模型生成合理即可。请选 1–2 个。',
-            q3: '生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1–2 个。',
+            q3: '画面质量：看完上面的候选视频后，哪一号的画面质量最好，并且没有轨迹线、闪烁、形变、黑边等干扰？请选 1–2 个。',
 
             prev: '上一题',
             next: '下一题',
@@ -703,7 +703,7 @@
             candNote: 'The 6 tiles come from 6 different models. Play, pause, or scrub to compare them carefully.',
             q1: 'Camera motion: after reviewing the reference trajectory and candidate videos, which option follows the reference most faithfully and looks most natural and continuous? Choose 1–2.',
             q2: 'Scene reconstruction: After reviewing the candidate videos above, which option has object positions and building structures closest to the reference frame? Visible parts should match the <strong>reference image</strong>, while unseen parts only need to be generated plausibly. Please choose 1–2.',
-            q3: 'Generation quality: which option has the best image quality and detail, without stray trajectory lines, flicker, or blur? Choose 1–2.',
+            q3: 'Image quality: after watching the candidate videos above, which option has the best image quality, without trajectory lines, flicker, deformation, black borders, or other artifacts? Choose 1–2.',
 
             prev: 'Previous',
             next: 'Next',
@@ -788,7 +788,7 @@
             </div>
 
             <div class="field">
-                <label data-i18n="q3">生成质量：看完上面的候选视频后，哪一号的画质和细节最好，并且没有轨迹线、闪烁或模糊等干扰？请选 1–2 个。</label>
+                <label data-i18n="q3">画面质量：看完上面的候选视频后，哪一号的画面质量最好，并且没有轨迹线、闪烁、形变、黑边等干扰？请选 1–2 个。</label>
                 <div class="rating-group">
                     ${options('qual_' + n)}
                 </div>
