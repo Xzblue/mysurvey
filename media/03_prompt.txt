@@ -1,0 +1,3 @@
+Environment: A spacious, empty residential entryway features light hardwood floors and cream-colored walls with white wainscoting. A wooden staircase with a banister ascends on the left. To the right, a large dark wood double door with oval glass panels stands next to a side door. A central doorway leads to an adjacent room with a window covered by sheer curtains. Wall sconces are mounted on the walls.
+Perspective: First-Person View without Visible Body.
+Trajectory: dolly or gimbal. The camera moves steadily forward from the entryway toward the central doorway. As it advances, the view shifts slightly to the left, aligning more directly with the opening. The motion is smooth and continuous, suggesting a stabilized camera system.
